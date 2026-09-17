@@ -12,6 +12,7 @@ export default async function ArticleDetailPage({ params }: { params: { slug: st
       <span className="tag">{article.category}</span>
       <h1>{article.title}</h1>
       <small>Par {article.author.name} — {article.publishedAt.toLocaleDateString('fr-FR')}</small>
+      {/* marked.parse does not sanitize — safe only because article.body is admin-authored, not public input */}
       <div dangerouslySetInnerHTML={{ __html: marked.parse(article.body) }} />
     </article>
   )
