@@ -99,4 +99,12 @@ describe('articles data layer', () => {
     await deleteArticle(article.id)
     expect(await getArticleBySlug('to-delete')).toBeNull()
   })
+
+  it('appends a numeric suffix when the slug already exists', async () => {
+    const user = await seedUser()
+    const first = await createArticle({ title: 'Même Titre', body: 'x', category: 'c', authorId: user.id })
+    const second = await createArticle({ title: 'Même Titre', body: 'x', category: 'c', authorId: user.id })
+    expect(first.slug).toBe('meme-titre')
+    expect(second.slug).toBe('meme-titre-2')
+  })
 })
