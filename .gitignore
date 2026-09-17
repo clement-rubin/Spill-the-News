@@ -38,3 +38,7 @@ next-env.d.ts
 
 # impeccable (internal tool state)
 .impeccable/
+
+# database
+*.db
+dev.db
