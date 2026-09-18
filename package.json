@@ -13,25 +13,27 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "react": "^18",
-    "react-dom": "^18",
-    "next": "14.2.35",
-    "prisma": "^5",
+    "@gsap/react": "^2.1.2",
     "@prisma/client": "^5",
-    "next-auth": "^4",
     "bcryptjs": "^2.4.3",
-    "marked": "^11"
+    "gsap": "^3.15.0",
+    "marked": "^11",
+    "next": "14.2.35",
+    "next-auth": "^4",
+    "prisma": "^5",
+    "react": "^18",
+    "react-dom": "^18"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@types/bcryptjs": "^2.4.2",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "postcss": "^8",
     "eslint": "^8",
     "eslint-config-next": "14.2.35",
-    "vitest": "^1",
-    "@types/bcryptjs": "^2.4.2",
-    "tsx": "^4"
+    "postcss": "^8",
+    "tsx": "^4",
+    "typescript": "^5",
+    "vitest": "^1"
   }
 }

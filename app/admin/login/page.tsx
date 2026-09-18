@@ -9,33 +9,61 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [pending, setPending] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
+    setPending(true)
     const res = await signIn('credentials', { redirect: false, email, password })
     if (res?.error) {
       setError('Email ou mot de passe incorrect.')
+      setPending(false)
     } else {
       router.push('/admin')
     }
   }
 
   return (
-    <div className="card" style={{ maxWidth: 400, margin: '2rem auto' }}>
-      <h1>Connexion admin</h1>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Email
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ display: 'block', width: '100%', marginBottom: '1rem' }} />
-        </label>
-        <label>
-          Mot de passe
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ display: 'block', width: '100%', marginBottom: '1rem' }} />
-        </label>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit" className="tag" style={{ border: 'none', cursor: 'pointer' }}>Se connecter</button>
-      </form>
+    <div className="auth-shell">
+      <div className="auth-card">
+        <h1>Connexion</h1>
+        <p>Espace contributeurs de Spill the News.</p>
+
+        <form onSubmit={handleSubmit}>
+          <div className="field">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              className="input"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="password">Mot de passe</label>
+            <input
+              id="password"
+              className="input"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          {error && <p className="form-error" role="alert">{error}</p>}
+
+          <button type="submit" className="btn" disabled={pending}>
+            {pending ? 'Connexion…' : 'Se connecter'}
+          </button>
+        </form>
+      </div>
     </div>
   )
 }

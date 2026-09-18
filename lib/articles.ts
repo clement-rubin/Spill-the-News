@@ -35,6 +35,10 @@ export async function getArticleBySlug(slug: string) {
   })
 }
 
+export async function getArticleById(id: string) {
+  return prisma.article.findUnique({ where: { id } })
+}
+
 export interface UpdateArticleInput {
   title?: string
   body?: string
