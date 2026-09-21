@@ -344,6 +344,11 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
 .hero h1 {
   margin-top: 1.5rem;
   max-width: 18ch;
+  /* Modak over Bagel Fat One here specifically — its bulbous, melted-drip
+     lowercase is the closest web font to the logo's hand-drawn bubble
+     lettering, closer than the chunkier-but-flatter Bagel Fat One. */
+  font-family: 'Modak', var(--font-display);
+  letter-spacing: 0.01em;
   font-size: clamp(3rem, 11vw, 7.5rem);
 }
 
@@ -359,6 +364,25 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
 .word > span {
   display: inline-block;
   will-change: transform;
+  /* Glossy fill standing in for the logo's painted highlights: a warm
+     gradient for the drip's shaded underside, plus a soft white bloom near
+     the top-left of each word for the glass-like shine. Text itself is
+     painted transparent so both backgrounds show through the glyphs. */
+  background-image:
+    radial-gradient(ellipse 65% 55% at 28% 22%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 55%),
+    linear-gradient(160deg, #fff4b8 0%, var(--yellow) 45%, #c98600 100%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 3px 0 rgba(27, 23, 16, 0.14));
+}
+
+/* Firefox lacks background-clip: text support in some versions — fall back
+   to a flat, still-bubbly yellow rather than invisible text. */
+@supports not (background-clip: text) {
+  .word > span { background: none; color: var(--yellow); }
 }
 
 .hero-lede {
