@@ -355,7 +355,7 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
    image's own ~6.4:1 aspect ratio. */
 .hero-wordmark {
   display: block;
-  width: clamp(230px, 44vw, 640px);
+  width: clamp(320px, 62vw, 920px);
   max-width: 100%;
   height: auto;
 }
