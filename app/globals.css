@@ -361,27 +361,39 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
 /* Flat yellow, no gloss — the warp below does the work the shine used to. */
 .letter {
   display: inline-block;
-  margin: 0 0.045em;
+  margin: 0 0.008em;
   color: var(--yellow);
 }
 
-/* Modak's narrow glyphs (i, l) sit almost flush against their neighbours at
-   the default tracking — nudged apart by the tilt, two in a row like
-   "Spill" can read as one shape. A touch more breathing room on either
-   side keeps each stroke distinct. */
+/* Modak's i/l/j/t are thin verticals with almost no side bearing — packed
+   this tight, a repeat like the "ll" in Spill collapses into one stroke.
+   Flagged from page.tsx (can't target by character in CSS alone) and given
+   the little extra room the rest of the word doesn't need. */
+.letter[data-narrow] { margin: 0 0.05em; }
+
 .letter:is(:first-child) { margin-left: 0; }
 .letter:is(:last-child) { margin-right: 0; }
 
-/* Static, no animation: each letter sits at its own tilt and baseline, like
-   hand-drawn bubble lettering rather than a typeset word. The 6-step cycle
-   resets per word (nth-child counts within .word), so short words still
-   read as deliberately wonky rather than randomly clipped mid-pattern. */
-.letter:nth-child(6n+1) { transform: rotate(-7deg) translateY(0.06em); }
-.letter:nth-child(6n+2) { transform: rotate(5deg) translateY(-0.05em); }
-.letter:nth-child(6n+3) { transform: rotate(-4deg) translateY(0.04em); }
-.letter:nth-child(6n+4) { transform: rotate(6deg) translateY(-0.03em); }
-.letter:nth-child(6n+5) { transform: rotate(-5deg) translateY(0.05em); }
-.letter:nth-child(6n+6) { transform: rotate(3deg) translateY(-0.04em); }
+/* Static, no animation: each letter sits at its own tilt, baseline and
+   size, like the logo's melted, hand-drawn bubble lettering rather than a
+   typeset word run through a filter. The 6-step cycle resets per word
+   (nth-child counts within .word), so short words still read as
+   deliberately wonky rather than randomly clipped mid-pattern.
+   Narrow letters get the same rhythm but less rotation, so a tilted "l"
+   doesn't lean far enough to butt into its neighbour again. */
+.letter:nth-child(6n+1) { transform: rotate(-9deg) translateY(0.07em) scale(0.94); }
+.letter:nth-child(6n+2) { transform: rotate(7deg) translateY(-0.06em) scale(1.08); }
+.letter:nth-child(6n+3) { transform: rotate(-6deg) translateY(0.05em) scale(0.97); }
+.letter:nth-child(6n+4) { transform: rotate(8deg) translateY(-0.04em) scale(1.05); }
+.letter:nth-child(6n+5) { transform: rotate(-7deg) translateY(0.06em) scale(0.95); }
+.letter:nth-child(6n+6) { transform: rotate(5deg) translateY(-0.05em) scale(1.03); }
+
+.letter[data-narrow]:nth-child(6n+1) { transform: rotate(-4deg) translateY(0.07em) scale(0.94); }
+.letter[data-narrow]:nth-child(6n+2) { transform: rotate(3deg) translateY(-0.06em) scale(1.08); }
+.letter[data-narrow]:nth-child(6n+3) { transform: rotate(-3deg) translateY(0.05em) scale(0.97); }
+.letter[data-narrow]:nth-child(6n+4) { transform: rotate(4deg) translateY(-0.04em) scale(1.05); }
+.letter[data-narrow]:nth-child(6n+5) { transform: rotate(-3deg) translateY(0.06em) scale(0.95); }
+.letter[data-narrow]:nth-child(6n+6) { transform: rotate(2deg) translateY(-0.05em) scale(1.03); }
 
 .hero-lede {
   margin-top: 2rem;

@@ -4,6 +4,11 @@ import { getEpisodes } from '@/lib/episodes'
 
 const TITLE = 'Spill the News'
 
+/* Modak's i/l/j/t are thin verticals with almost no side bearing — packed
+   tight like the rest of the wordmark, a repeat like "ll" collapses into
+   one stroke. They get a touch more room in the CSS below. */
+const NARROW_LETTERS = new Set(['i', 'l', 'j', 't'])
+
 /** The domains we cover, stated once under the Articles rule. */
 const DOMAINS = ['Société', 'Politique', 'Culture', 'Environnement', 'Économie']
 
@@ -45,8 +50,14 @@ export default async function HomePage() {
             {TITLE.split(' ').map((word) => (
               <span className="word" key={word}>
                 {Array.from(word).map((letter, index) => (
-                  // eslint-disable-next-line react/no-array-index-key
-                  <span className="letter" key={index}>{letter}</span>
+                  <span
+                    className="letter"
+                    // eslint-disable-next-line react/no-array-index-key
+                    key={index}
+                    data-narrow={NARROW_LETTERS.has(letter.toLowerCase()) || undefined}
+                  >
+                    {letter}
+                  </span>
                 ))}
               </span>
             ))}
