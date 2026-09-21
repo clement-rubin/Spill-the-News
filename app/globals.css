@@ -597,6 +597,9 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
   max-width: 44rem;
   margin: 0 auto;
   padding: clamp(2.5rem, 5vw, 4rem) 2rem clamp(4rem, 8vw, 6rem);
+  background: var(--paper);
+  position: relative;
+  z-index: 1;
 }
 
 .detail-back {
