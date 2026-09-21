@@ -44,7 +44,10 @@ export default async function HomePage() {
           <h1 data-split>
             {TITLE.split(' ').map((word) => (
               <span className="word" key={word}>
-                <span>{word}</span>
+                {Array.from(word).map((letter, index) => (
+                  // eslint-disable-next-line react/no-array-index-key
+                  <span className="letter" key={index}>{letter}</span>
+                ))}
               </span>
             ))}
           </h1>

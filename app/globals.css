@@ -349,41 +349,31 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
      lettering, closer than the chunkier-but-flatter Bagel Fat One. */
   font-family: 'Modak', var(--font-display);
   letter-spacing: 0.01em;
-  font-size: clamp(3rem, 11vw, 7.5rem);
+  font-size: clamp(2.6rem, 9.5vw, 6.4rem);
 }
 
-/* Each word gets a clipping frame so it can slide up from behind its own
-   baseline instead of just fading. */
 .word {
   display: inline-block;
-  overflow: hidden;
   vertical-align: bottom;
   padding-right: 0.22em;
 }
 
-.word > span {
+/* Flat yellow, no gloss — the warp below does the work the shine used to. */
+.letter {
   display: inline-block;
-  will-change: transform;
-  /* Glossy fill standing in for the logo's painted highlights: a warm
-     gradient for the drip's shaded underside, plus a soft white bloom near
-     the top-left of each word for the glass-like shine. Text itself is
-     painted transparent so both backgrounds show through the glyphs. */
-  background-image:
-    radial-gradient(ellipse 65% 55% at 28% 22%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 55%),
-    linear-gradient(160deg, #fff4b8 0%, var(--yellow) 45%, #c98600 100%);
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  filter: drop-shadow(0 3px 0 rgba(27, 23, 16, 0.14));
+  color: var(--yellow);
 }
 
-/* Firefox lacks background-clip: text support in some versions — fall back
-   to a flat, still-bubbly yellow rather than invisible text. */
-@supports not (background-clip: text) {
-  .word > span { background: none; color: var(--yellow); }
-}
+/* Static, no animation: each letter sits at its own tilt and baseline, like
+   hand-drawn bubble lettering rather than a typeset word. The 6-step cycle
+   resets per word (nth-child counts within .word), so short words still
+   read as deliberately wonky rather than randomly clipped mid-pattern. */
+.letter:nth-child(6n+1) { transform: rotate(-7deg) translateY(0.06em); }
+.letter:nth-child(6n+2) { transform: rotate(5deg) translateY(-0.05em); }
+.letter:nth-child(6n+3) { transform: rotate(-4deg) translateY(0.04em); }
+.letter:nth-child(6n+4) { transform: rotate(6deg) translateY(-0.03em); }
+.letter:nth-child(6n+5) { transform: rotate(-5deg) translateY(0.05em); }
+.letter:nth-child(6n+6) { transform: rotate(3deg) translateY(-0.04em); }
 
 .hero-lede {
   margin-top: 2rem;
@@ -1760,11 +1750,6 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
 
 /* ---------- motion: design import ---------- */
 
-@keyframes logo-swell {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.045); }
-}
-
 @keyframes on-air {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.35; transform: scale(0.82); }
@@ -1797,11 +1782,6 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
   50% { transform: translateX(2.5px); }
 }
 
-/* The wordmark keeps breathing after it lands, picking up where word-up ends. */
-.word:nth-child(1) > span { animation: word-up 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.06s backwards, logo-swell 4.6s ease-in-out 1.16s infinite; }
-.word:nth-child(2) > span { animation: word-up 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.15s backwards, logo-swell 4.6s ease-in-out 1.55s infinite; }
-.word:nth-child(3) > span { animation: word-up 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.24s backwards, logo-swell 4.6s ease-in-out 1.94s infinite; }
-
 /* ---------- motion ---------- */
 
 /* The header and hero are above the fold, so they animate in CSS — no waiting on
@@ -1816,14 +1796,6 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
 
 [data-hero-item] {
   animation: rise-in 0.75s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-}
-
-/* word-up + logo-swell are declared together further down, so the two
-   animations keep their own delays. */
-
-@keyframes word-up {
-  from { transform: translateY(115%); }
-  to { transform: none; }
 }
 
 [data-hero-item]:nth-of-type(1) { animation-delay: 0.1s; }
@@ -1851,5 +1823,4 @@ html:not(.motion) [data-reveal] {
   [data-reveal] { opacity: 1; }
   body::after { display: none; }
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-  .word > span { transform: none !important; }
 }
