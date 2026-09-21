@@ -361,7 +361,7 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
 /* Flat yellow, no gloss — the warp below does the work the shine used to. */
 .letter {
   display: inline-block;
-  margin: 0 0.008em;
+  margin: 0 -0.01em;
   color: var(--yellow);
 }
 
@@ -369,7 +369,7 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
    this tight, a repeat like the "ll" in Spill collapses into one stroke.
    Flagged from page.tsx (can't target by character in CSS alone) and given
    the little extra room the rest of the word doesn't need. */
-.letter[data-narrow] { margin: 0 0.05em; }
+.letter[data-narrow] { margin: 0 0.03em; }
 
 .letter:is(:first-child) { margin-left: 0; }
 .letter:is(:last-child) { margin-right: 0; }
