@@ -361,8 +361,16 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
 /* Flat yellow, no gloss — the warp below does the work the shine used to. */
 .letter {
   display: inline-block;
+  margin: 0 0.045em;
   color: var(--yellow);
 }
+
+/* Modak's narrow glyphs (i, l) sit almost flush against their neighbours at
+   the default tracking — nudged apart by the tilt, two in a row like
+   "Spill" can read as one shape. A touch more breathing room on either
+   side keeps each stroke distinct. */
+.letter:is(:first-child) { margin-left: 0; }
+.letter:is(:last-child) { margin-right: 0; }
 
 /* Static, no animation: each letter sits at its own tilt and baseline, like
    hand-drawn bubble lettering rather than a typeset word. The 6-step cycle
