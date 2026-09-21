@@ -4,11 +4,6 @@ import { getEpisodes } from '@/lib/episodes'
 
 const TITLE = 'Spill the News'
 
-/* Modak's i/l/j/t are thin verticals with almost no side bearing — packed
-   tight like the rest of the wordmark, a repeat like "ll" collapses into
-   one stroke. They get a touch more room in the CSS below. */
-const NARROW_LETTERS = new Set(['i', 'l', 'j', 't'])
-
 /** The domains we cover, stated once under the Articles rule. */
 const DOMAINS = ['Société', 'Politique', 'Culture', 'Environnement', 'Économie']
 
@@ -46,21 +41,11 @@ export default async function HomePage() {
         <div className="hero-glow" data-hero-glow aria-hidden />
         <div className="inner">
           <span className="kicker" data-hero-item>Média étudiant</span>
-          <h1 data-split>
-            {TITLE.split(' ').map((word) => (
-              <span className="word" key={word}>
-                {Array.from(word).map((letter, index) => (
-                  <span
-                    className="letter"
-                    // eslint-disable-next-line react/no-array-index-key
-                    key={index}
-                    data-narrow={NARROW_LETTERS.has(letter.toLowerCase()) || undefined}
-                  >
-                    {letter}
-                  </span>
-                ))}
-              </span>
-            ))}
+          <h1>
+            {/* The wordmark is the logo's own lettering, cropped to just the
+                text — no font reproduces it, so this is the real thing
+                rather than an approximation. Text stays for SEO/a11y. */}
+            <img className="hero-wordmark" src="/wordmark.webp" alt={TITLE} />
           </h1>
           <p className="hero-lede" data-hero-item>
             Avec Spill the news venez partager l&apos;actu autour d&apos;une tasse de
