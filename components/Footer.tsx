@@ -43,12 +43,25 @@ export default function Footer() {
                 href="https://instagram.com/spill.thenews"
                 target="_blank"
                 rel="noopener noreferrer"
+                className="footer-insta"
+                aria-label="Instagram @spill.thenews"
               >
-                Instagram @spill.thenews
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <rect x="2" y="2" width="20" height="20" rx="5.5" stroke="currentColor" strokeWidth="1.8"/>
+                  <circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.8"/>
+                  <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
+                </svg>
+                @spill.thenews
               </a>
             </li>
             <li>
-              <a href="mailto:spillthenews7@gmail.com">spillthenews7@gmail.com</a>
+              <a href="mailto:spillthenews7@gmail.com" className="footer-insta">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" strokeWidth="1.8"/>
+                  <path d="M2 8l10 7 10-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                </svg>
+                spillthenews7@gmail.com
+              </a>
             </li>
           </ul>
         </div>
@@ -56,7 +69,7 @@ export default function Footer() {
 
       <div className="footer-bottom">
         <span>© {new Date().getFullYear()} Spill the News</span>
-        <span>Fait entre deux thés</span>
+        <Link href="/admin" className="footer-admin-link">Fait entre deux thés</Link>
       </div>
     </footer>
   )

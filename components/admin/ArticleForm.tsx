@@ -50,7 +50,7 @@ export default function ArticleForm({ action, article }: Props) {
           id="category"
           name="category"
           className="input"
-          placeholder="Édito, Culture, Société…"
+          placeholder="Politique, Médias, Géopolitique, Économie, Culture, Littérature, Enjeux sociétaux"
           defaultValue={article?.category}
           required
         />

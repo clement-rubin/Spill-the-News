@@ -5,7 +5,7 @@ import { getEpisodes } from '@/lib/episodes'
 const TITLE = 'Spill the News'
 
 /** The domains we cover, stated once under the Articles rule. */
-const DOMAINS = ['Société', 'Politique', 'Culture', 'Environnement', 'Économie']
+const DOMAINS = ['Politique', 'Médias', 'Géopolitique', 'Économie', 'Culture', 'Littérature', 'Enjeux sociétaux']
 
 const dateFormat = new Intl.DateTimeFormat('fr-FR', {
   day: 'numeric',

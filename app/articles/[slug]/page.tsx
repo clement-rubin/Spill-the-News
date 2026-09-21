@@ -14,6 +14,7 @@ export default async function ArticleDetailPage({ params }: { params: { slug: st
   if (!article) notFound()
 
   return (
+    <div className="detail-page">
     <article className="detail">
       <Link href="/articles" className="detail-back">
         <span aria-hidden>←</span> Tous les articles
@@ -44,5 +45,6 @@ export default async function ArticleDetailPage({ params }: { params: { slug: st
       {/* marked.parse does not sanitize — safe only because article.body is admin-authored, not public input */}
       <div className="prose" dangerouslySetInnerHTML={{ __html: marked.parse(article.body) }} />
     </article>
+    </div>
   )
 }

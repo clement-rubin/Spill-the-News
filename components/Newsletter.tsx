@@ -29,6 +29,8 @@ export default function Newsletter() {
   const [open, setOpen] = useState(false)
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState(false)
   const closeRef = useRef<HTMLButtonElement>(null)
 
   const dismiss = useCallback(() => {
@@ -118,9 +120,23 @@ export default function Newsletter() {
             <>
               <form
                 className="nl-form"
-                onSubmit={(event) => {
+                onSubmit={async (event) => {
                   event.preventDefault()
-                  setSent(true)
+                  setSubmitting(true)
+                  setSubmitError(false)
+                  try {
+                    const res = await fetch('/api/newsletter', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ email }),
+                    })
+                    if (!res.ok) throw new Error()
+                    setSent(true)
+                  } catch {
+                    setSubmitError(true)
+                  } finally {
+                    setSubmitting(false)
+                  }
                 }}
               >
                 <input
@@ -132,8 +148,13 @@ export default function Newsletter() {
                   placeholder="ton@email.fr"
                   aria-label="Adresse e-mail"
                 />
-                <button type="submit" className="nl-submit">Je m&apos;abonne</button>
+                <button type="submit" className="nl-submit" disabled={submitting}>
+                  {submitting ? '…' : "Je m'abonne"}
+                </button>
               </form>
+              {submitError && (
+                <p className="nl-error">Une erreur s&apos;est produite, réessaie.</p>
+              )}
               <p className="nl-note">Zéro spam, désabonnement en un clic.</p>
             </>
           )}
