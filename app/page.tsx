@@ -41,12 +41,11 @@ export default async function HomePage() {
         <div className="hero-glow" data-hero-glow aria-hidden />
         <div className="inner">
           <span className="kicker" data-hero-item>Média étudiant</span>
-          <h1 data-split>
-            {TITLE.split(' ').map((word) => (
-              <span className="word" key={word}>
-                <span>{word}</span>
-              </span>
-            ))}
+          <h1>
+            {/* The wordmark is the logo's own lettering, cropped to just the
+                text — no font reproduces it, so this is the real thing
+                rather than an approximation. Text stays for SEO/a11y. */}
+            <img className="hero-wordmark" src="/wordmark.webp" alt={TITLE} />
           </h1>
           <p className="hero-lede" data-hero-item>
             Avec Spill the news venez partager l&apos;actu autour d&apos;une tasse de

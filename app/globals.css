@@ -343,22 +343,21 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
 
 .hero h1 {
   margin-top: 1.5rem;
-  max-width: 18ch;
-  font-size: clamp(3rem, 11vw, 7.5rem);
+  /* The img is the only content, so collapse the line box around it —
+     otherwise an inline image leaves descender gap below itself. */
+  line-height: 0;
 }
 
-/* Each word gets a clipping frame so it can slide up from behind its own
-   baseline instead of just fading. */
-.word {
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: bottom;
-  padding-right: 0.22em;
-}
-
-.word > span {
-  display: inline-block;
-  will-change: transform;
+/* The logo's own lettering, cropped to just the wordmark — hand-drawn art,
+   not a typeface, so no font file reproduces it. This is the real thing
+   rather than an approximation. Width scales with the viewport like the
+   text it replaces did via its font-size clamp; height follows from the
+   image's own ~6.4:1 aspect ratio. */
+.hero-wordmark {
+  display: block;
+  width: clamp(320px, 62vw, 920px);
+  max-width: 100%;
+  height: auto;
 }
 
 .hero-lede {
@@ -598,6 +597,9 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
   max-width: 44rem;
   margin: 0 auto;
   padding: clamp(2.5rem, 5vw, 4rem) 2rem clamp(4rem, 8vw, 6rem);
+  background: var(--paper);
+  position: relative;
+  z-index: 1;
 }
 
 .detail-back {
@@ -1736,11 +1738,6 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
 
 /* ---------- motion: design import ---------- */
 
-@keyframes logo-swell {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.045); }
-}
-
 @keyframes on-air {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.35; transform: scale(0.82); }
@@ -1773,11 +1770,6 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
   50% { transform: translateX(2.5px); }
 }
 
-/* The wordmark keeps breathing after it lands, picking up where word-up ends. */
-.word:nth-child(1) > span { animation: word-up 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.06s backwards, logo-swell 4.6s ease-in-out 1.16s infinite; }
-.word:nth-child(2) > span { animation: word-up 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.15s backwards, logo-swell 4.6s ease-in-out 1.55s infinite; }
-.word:nth-child(3) > span { animation: word-up 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.24s backwards, logo-swell 4.6s ease-in-out 1.94s infinite; }
-
 /* ---------- motion ---------- */
 
 /* The header and hero are above the fold, so they animate in CSS — no waiting on
@@ -1792,14 +1784,6 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
 
 [data-hero-item] {
   animation: rise-in 0.75s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-}
-
-/* word-up + logo-swell are declared together further down, so the two
-   animations keep their own delays. */
-
-@keyframes word-up {
-  from { transform: translateY(115%); }
-  to { transform: none; }
 }
 
 [data-hero-item]:nth-of-type(1) { animation-delay: 0.1s; }
@@ -1827,5 +1811,4 @@ html:not(.motion) [data-reveal] {
   [data-reveal] { opacity: 1; }
   body::after { display: none; }
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-  .word > span { transform: none !important; }
 }
