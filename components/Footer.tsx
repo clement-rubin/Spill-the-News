@@ -31,7 +31,7 @@ export default function Footer() {
           <ul>
             <li><Link href="/articles">Articles</Link></li>
             <li><Link href="/podcast">Podcast</Link></li>
-            <li><Link href="/#apropos">Qui on est</Link></li>
+            <li><Link href="/#apropos">Qui sommes-nous</Link></li>
           </ul>
         </div>
 

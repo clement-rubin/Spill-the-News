@@ -87,7 +87,7 @@ export default async function AdminDashboard() {
         ) : (
           <div className="empty">
             <strong>Aucun épisode</strong>
-            Ajoute un lien Spotify, Apple ou YouTube.
+            Ajoute un lien Spotify.
           </div>
         )}
       </section>

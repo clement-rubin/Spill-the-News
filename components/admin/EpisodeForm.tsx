@@ -2,6 +2,7 @@
 
 import { useFormState, useFormStatus } from 'react-dom'
 import Link from 'next/link'
+import CoverField from './CoverField'
 import type { FormState } from '@/app/admin/episodes/actions'
 
 type Action = (prev: FormState, formData: FormData) => Promise<FormState>
@@ -55,21 +56,13 @@ export default function EpisodeForm({ action, episode }: Props) {
           defaultValue={episode?.externalLink}
           required
         />
-        <p className="field-hint">Spotify, Apple Podcasts ou YouTube.</p>
+        <p className="field-hint">Lien de l&apos;épisode sur Spotify.</p>
       </div>
 
-      <div className="field">
-        <label htmlFor="coverImage">Image de couverture</label>
-        <input
-          id="coverImage"
-          name="coverImage"
-          className="input"
-          type="url"
-          placeholder="https://…"
-          defaultValue={episode?.coverImage ?? ''}
-        />
-        <p className="field-hint">Optionnel.</p>
-      </div>
+      <CoverField
+        defaultValue={episode?.coverImage ?? null}
+        hint="Optionnel. La pochette de l’épisode sur Spotify fait très bien l’affaire."
+      />
 
       <div className="field">
         <label htmlFor="description">Description</label>

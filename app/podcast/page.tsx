@@ -15,8 +15,7 @@ export default async function PodcastPage() {
         <span className="kicker">À écouter</span>
         <h1>Podcast</h1>
         <p>
-          Nos conversations, en version longue. Disponible sur Spotify, Apple
-          Podcasts et YouTube.
+          Nos conversations, en version longue. Disponible sur Spotify.
         </p>
       </header>
 

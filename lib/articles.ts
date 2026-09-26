@@ -5,7 +5,7 @@ export interface CreateArticleInput {
   title: string
   body: string
   category: string
-  coverImage?: string
+  coverImage?: string | null
   authorId: string
 }
 
@@ -13,7 +13,7 @@ export interface UpdateArticleInput {
   title?: string
   body?: string
   category?: string
-  coverImage?: string
+  coverImage?: string | null
 }
 
 interface AuthorRow {

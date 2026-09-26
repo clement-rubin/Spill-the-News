@@ -4,7 +4,7 @@ export interface CreateEpisodeInput {
   title: string
   description: string
   externalLink: string
-  coverImage?: string
+  coverImage?: string | null
   authorId: string
 }
 
@@ -12,7 +12,7 @@ export interface UpdateEpisodeInput {
   title?: string
   description?: string
   externalLink?: string
-  coverImage?: string
+  coverImage?: string | null
 }
 
 interface AuthorRow {

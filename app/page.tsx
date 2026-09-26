@@ -161,8 +161,7 @@ export default async function HomePage() {
         </div>
 
         <p className="radio-lede" data-reveal>
-          Un épisode chaque mercredi, à écouter dans le bus, en cuisinant ou la
-          tasse à la main.
+          Des épisodes à écouter avec une tasse à la main.
         </p>
 
         {latestEpisode ? (
@@ -224,7 +223,7 @@ export default async function HomePage() {
       <section className="section" id="apropos">
         <div className="about" data-reveal>
           <div>
-            <h2>Qui on est</h2>
+            <h2>Qui sommes-nous</h2>
             <p className="about-lede">
               Un média étudiant né d&apos;une envie simple : comprendre l&apos;actu
               sans y passer la journée. On choisit quelques sujets, on les creuse,
@@ -235,15 +234,15 @@ export default async function HomePage() {
           <div className="about-list">
             <div className="about-item">
               <h3>Rédaction</h3>
-              <p>Enquêtes, décryptages et formats courts.</p>
+              <p>des articles variés</p>
             </div>
             <div className="about-item">
               <h3>Podcast</h3>
-              <p>Spill Radio, un épisode chaque mercredi.</p>
+              <p>on discute de divers sujets ensemble</p>
             </div>
             <div className="about-item">
               <h3>Réseaux</h3>
-              <p>L&apos;actu en post, les coulisses en story.</p>
+              <p>l&apos;actu en publication, réels et story dans le à propos</p>
             </div>
           </div>
         </div>

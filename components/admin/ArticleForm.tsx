@@ -2,6 +2,7 @@
 
 import { useFormState, useFormStatus } from 'react-dom'
 import Link from 'next/link'
+import CoverField from './CoverField'
 import type { FormState } from '@/app/admin/articles/actions'
 
 type Action = (prev: FormState, formData: FormData) => Promise<FormState>
@@ -56,18 +57,7 @@ export default function ArticleForm({ action, article }: Props) {
         />
       </div>
 
-      <div className="field">
-        <label htmlFor="coverImage">Image de couverture</label>
-        <input
-          id="coverImage"
-          name="coverImage"
-          className="input"
-          type="url"
-          placeholder="https://…"
-          defaultValue={article?.coverImage ?? ''}
-        />
-        <p className="field-hint">Optionnel. Collez l’adresse d’une image.</p>
-      </div>
+      <CoverField defaultValue={article?.coverImage ?? null} />
 
       <div className="field">
         <label htmlFor="body">Contenu</label>

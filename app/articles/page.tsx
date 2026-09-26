@@ -14,10 +14,7 @@ export default async function ArticlesPage() {
       <header className="page-head">
         <span className="kicker">Les écrits</span>
         <h1>Articles</h1>
-        <p>
-          Culture, arts et société. Nos enquêtes, chroniques et coups de cœur, du
-          plus récent au plus ancien.
-        </p>
+        <p>Nos articles à découvrir en intégralité.</p>
       </header>
 
       <section className="section">
