@@ -1,0 +1,15 @@
+name: Profil Local
+version: 1.0.0
+models:
+  - title: Qwen 2.5 Coder
+    provider: ollama
+    model: qwen2.5-coder:7b
+    contextLength: 16384
+  - name: Autodetect
+    provider: ollama
+    model: AUTODETECT
+tabAutocompleteModel:
+  title: Qwen Autocomplete
+  provider: ollama
+  model: qwen2.5-coder:7b
+allowAnonymousTelemetry: false

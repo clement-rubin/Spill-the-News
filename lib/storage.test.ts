@@ -114,14 +114,28 @@ describe('removeCover', () => {
 })
 
 describe('uploadCover', () => {
-  it('creates the bucket once and returns the public URL', async () => {
+  it('uploads straight away when the bucket is already there', async () => {
+    const url = await uploadCover(png(), 'articles')
+
+    // No createBucket call: a role that may write objects but not create
+    // buckets still has to be able to publish.
+    expect(storage.createBucket).not.toHaveBeenCalled()
+    expect(bucket.upload).toHaveBeenCalledOnce()
+    expect(url.startsWith(`${PUBLIC}/articles/`)).toBe(true)
+  })
+
+  it('creates the bucket and retries when it is missing', async () => {
+    bucket.upload
+      .mockResolvedValueOnce({ data: null, error: { message: 'Bucket not found' } })
+      .mockResolvedValueOnce({ data: null, error: null })
+
     const url = await uploadCover(png(), 'articles')
 
     expect(storage.createBucket).toHaveBeenCalledWith(COVER_BUCKET, {
       public: true,
       fileSizeLimit: MAX_COVER_BYTES,
     })
-    expect(bucket.upload).toHaveBeenCalledOnce()
+    expect(bucket.upload).toHaveBeenCalledTimes(2)
     expect(url.startsWith(`${PUBLIC}/articles/`)).toBe(true)
   })
 
@@ -131,17 +145,27 @@ describe('uploadCover', () => {
     expect(bucket.upload).not.toHaveBeenCalled()
   })
 
-  it('explains itself when the bucket cannot be reached', async () => {
-    storage.createBucket.mockResolvedValue({ data: null, error: { message: 'nope' } })
-    await expect(uploadCover(png(), 'articles')).rejects.toThrow(/Bucket/)
+  it('explains itself when the bucket is missing and cannot be created', async () => {
+    bucket.upload.mockResolvedValue({ data: null, error: { message: 'Bucket not found' } })
+    storage.createBucket.mockResolvedValue({ data: null, error: { message: 'insufficient privileges' } })
+
+    await expect(uploadCover(png(), 'articles')).rejects.toThrow(/Storage/)
+    expect(bucket.upload).toHaveBeenCalledOnce()
   })
 
   it('tolerates the bucket already existing', async () => {
+    bucket.upload.mockResolvedValueOnce({ data: null, error: { message: 'Bucket not found' } })
     storage.createBucket.mockResolvedValue({
       data: null,
       error: { message: 'The resource already exists' },
     })
+
     await expect(uploadCover(png(), 'articles')).resolves.toContain(PUBLIC)
+  })
+
+  it('surfaces a genuine upload failure', async () => {
+    bucket.upload.mockResolvedValue({ data: null, error: { message: 'Payload too large' } })
+    await expect(uploadCover(png(), 'articles')).rejects.toThrow(/Payload too large/)
   })
 })
 

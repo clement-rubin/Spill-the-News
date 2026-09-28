@@ -54,17 +54,21 @@ export function managedCoverPath(url: string | null | undefined): string | null 
   return decodeURIComponent(url.slice(prefix.length))
 }
 
-async function ensureBucket(): Promise<void> {
+type StorageError = { message: string } | null
+
+function isMissingBucket(error: StorageError): boolean {
+  return !!error && /bucket not found/i.test(error.message)
+}
+
+async function createBucket(): Promise<void> {
   const { error } = await supabase.storage.createBucket(COVER_BUCKET, {
     public: true,
     fileSizeLimit: MAX_COVER_BYTES,
   })
-  // Already-exists is the normal path after the very first upload. Any other
-  // failure means the service role cannot reach Storage, so say so plainly
-  // instead of letting the upload fail with something cryptic.
   if (error && !/already exists/i.test(error.message)) {
     throw new Error(
-      `Bucket « ${COVER_BUCKET} » indisponible : ${error.message}. Crée-le dans Supabase > Storage.`
+      `Bucket « ${COVER_BUCKET} » absent et non créable (${error.message}). ` +
+        'Crée-le dans Supabase > Storage, en accès public.'
     )
   }
 }
@@ -73,12 +77,18 @@ export async function uploadCover(file: File, folder: CoverFolder): Promise<stri
   const invalid = validateCover(file)
   if (invalid) throw new Error(invalid)
 
-  await ensureBucket()
-
   const path = coverStorageName(folder, file.name, file.type)
-  const { error } = await supabase.storage
-    .from(COVER_BUCKET)
-    .upload(path, file, { contentType: file.type, cacheControl: '31536000', upsert: false })
+  const options = { contentType: file.type, cacheControl: '31536000', upsert: false }
+
+  // Uploading before creating the bucket is deliberate: a service role allowed
+  // to write objects but not to create buckets can still publish, and on a
+  // fresh project the bucket is simply not there yet.
+  let { error } = await supabase.storage.from(COVER_BUCKET).upload(path, file, options)
+
+  if (isMissingBucket(error)) {
+    await createBucket()
+    ;({ error } = await supabase.storage.from(COVER_BUCKET).upload(path, file, options))
+  }
 
   if (error) throw new Error(`Envoi de l’image impossible : ${error.message}`)
 

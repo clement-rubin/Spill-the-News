@@ -34,6 +34,10 @@ export default function CoverField({ defaultValue, hint }: Props) {
   const [pending, setPending] = useState<Pending | null>(null)
   const [busy, setBusy] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
+  // The unmount cleanup below runs once, so it cannot read `pending` from a
+  // closure that froze on the first render — it would always see null and
+  // leave the decoded bitmap open.
+  const held = useRef<Pending | null>(null)
 
   // Object URLs live until revoked, so every preview has to be released or the
   // tab leaks a copy of each image the editor ever opened.
@@ -45,11 +49,17 @@ export default function CoverField({ defaultValue, hint }: Props) {
 
   useEffect(() => {
     return () => {
-      pending?.bitmap.close()
-      if (pending?.preview.startsWith('blob:')) URL.revokeObjectURL(pending.preview)
+      const open = held.current
+      if (!open) return
+      open.bitmap.close()
+      if (open.preview.startsWith('blob:')) URL.revokeObjectURL(open.preview)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  function setCropper(next: Pending | null) {
+    held.current = next
+    setPending(next)
+  }
 
   const shown = preview ?? url
 
@@ -68,6 +78,9 @@ export default function CoverField({ defaultValue, hint }: Props) {
   function reset() {
     if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview)
     setPreview(null)
+    // The URL box is the other half of the cover: leaving it filled would keep
+    // the cover the editor just asked to remove.
+    setUrl('')
     setReport(null)
     setError(null)
     if (fileInput.current) fileInput.current.value = ''
@@ -119,13 +132,14 @@ export default function CoverField({ defaultValue, hint }: Props) {
     }
 
     if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview)
-    setPending({ bitmap, file, size, preview: URL.createObjectURL(file) })
+    setPreview(null)
+    setCropper({ bitmap, file, size, preview: URL.createObjectURL(file) })
   }
 
   function closeCropper() {
     pending?.bitmap.close()
     if (pending?.preview.startsWith('blob:')) URL.revokeObjectURL(pending.preview)
-    setPending(null)
+    setCropper(null)
     // Cancelling drops the selection too, so nothing silently ships uncropped.
     reset()
   }
@@ -133,7 +147,7 @@ export default function CoverField({ defaultValue, hint }: Props) {
   async function confirmCrop(rect: Rect) {
     if (!pending) return
     const { bitmap, file, preview: cropPreview } = pending
-    setPending(null)
+    setCropper(null)
     if (cropPreview.startsWith('blob:')) URL.revokeObjectURL(cropPreview)
     // The bitmap has to outlive process() — the canvas draws from it.
     await process(bitmap, rect, file)

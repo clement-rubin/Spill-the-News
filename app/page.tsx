@@ -242,7 +242,7 @@ export default async function HomePage() {
             </div>
             <div className="about-item">
               <h3>Réseaux</h3>
-              <p>l&apos;actu en publication, réels et story dans le à propos</p>
+              <p>l&apos;actu en publication, réels et story</p>
             </div>
           </div>
         </div>
