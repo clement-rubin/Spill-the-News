@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { sendEmail } from '@/lib/email'
+import { renderNewsletterEmail } from '@/lib/newsletterTemplate'
+import { unsubscribeUrl } from '@/lib/unsubscribe'
 
 // Supabase table required:
 //   CREATE TABLE newsletter_subscriptions (
@@ -29,6 +32,19 @@ export async function POST(request: Request) {
     console.error('newsletter upsert:', error)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
   }
+
+  // The subscription is already saved, so a failed confirmation email
+  // never turns into a failed subscription for the visitor.
+  await sendEmail({
+    to: email,
+    subject: 'Bienvenue dans la newsletter Spill the News',
+    html: renderNewsletterEmail({
+      title: "C'est confirmé ☕",
+      bodyHtml:
+        '<p>Merci de rejoindre la tasse du mercredi. Tu recevras nos prochains articles et épisodes directement dans ta boîte mail.</p>',
+      unsubscribeHref: unsubscribeUrl(email),
+    }),
+  })
 
   return NextResponse.json({ ok: true })
 }

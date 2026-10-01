@@ -3,6 +3,7 @@
 import { useFormState, useFormStatus } from 'react-dom'
 import Link from 'next/link'
 import CoverField from './CoverField'
+import RichTextField from './RichTextField'
 import type { FormState } from '@/app/admin/articles/actions'
 
 type Action = (prev: FormState, formData: FormData) => Promise<FormState>
@@ -61,15 +62,10 @@ export default function ArticleForm({ action, article }: Props) {
 
       <div className="field">
         <label htmlFor="body">Contenu</label>
-        <textarea
-          id="body"
-          name="body"
-          className="textarea"
-          defaultValue={article?.body}
-          required
-        />
+        <RichTextField id="body" name="body" defaultValue={article?.body} />
         <p className="field-hint">
-          Markdown accepté : <code>## Titre</code>, <code>**gras**</code>,{' '}
+          Utilisez la barre d&apos;outils pour mettre en gras, souligner, changer la police ou
+          insérer un lien. Markdown accepté aussi : <code>## Titre</code>, <code>**gras**</code>,{' '}
           <code>[lien](https://…)</code>.
         </p>
       </div>

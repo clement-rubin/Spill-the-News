@@ -92,6 +92,7 @@ export async function updateArticleAction(
 
   revalidatePath('/admin')
   revalidatePath('/articles')
+  revalidatePath(`/articles/${current.slug}`)
   revalidatePath('/')
   redirect('/admin')
 }
@@ -107,6 +108,7 @@ export async function deleteArticleAction(formData: FormData) {
 
   revalidatePath('/admin')
   revalidatePath('/articles')
+  if (current) revalidatePath(`/articles/${current.slug}`)
   revalidatePath('/')
   redirect('/admin')
 }

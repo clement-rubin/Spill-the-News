@@ -4,6 +4,7 @@ import Footer from '@/components/Footer'
 import Motion from '@/components/Motion'
 import LogoField from '@/components/LogoField'
 import Newsletter from '@/components/Newsletter'
+import VisitTracker from '@/components/VisitTracker'
 
 export const metadata = {
   title: 'Spill the News — média étudiant',
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main>{children}</main>
         <Footer />
         <Newsletter />
+        <VisitTracker />
       </body>
     </html>
   )
