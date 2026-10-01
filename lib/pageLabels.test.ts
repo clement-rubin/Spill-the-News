@@ -1,11 +1,7 @@
-import { vi, describe, it, expect } from 'vitest'
-
-// Must be hoisted before any import that touches lib/supabase.ts
-vi.mock('@/lib/supabase', () => ({ supabase: {} }))
-
-import type { Article } from '@/lib/articles'
-import type { Episode } from '@/lib/episodes'
-import { resolvePathLabel } from './page'
+import { describe, it, expect } from 'vitest'
+import type { Article } from './articles'
+import type { Episode } from './episodes'
+import { resolvePathLabel } from './pageLabels'
 
 const author = { id: 'author-1', name: 'Jane', email: 'jane@example.com' }
 
