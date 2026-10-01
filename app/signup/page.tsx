@@ -1,11 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createBrowserSupabase } from '@/lib/supabase/client'
 import { mapAuthError } from '@/lib/authErrors'
 
 export default function SignupPage() {
+  const router = useRouter()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -25,7 +27,7 @@ export default function SignupPage() {
 
     setPending(true)
     const supabase = createBrowserSupabase()
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -33,12 +35,24 @@ export default function SignupPage() {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     })
-    setPending(false)
 
     if (signUpError) {
+      setPending(false)
       setError(mapAuthError(signUpError))
       return
     }
+
+    // With "Confirm email" off in Supabase, signUp logs the member in
+    // immediately — a session comes back right away and there's nothing to
+    // confirm. With it on, no session comes back yet; show the check-your-
+    // email message instead. Same code path handles either setting.
+    if (data.session) {
+      router.push('/admin')
+      router.refresh()
+      return
+    }
+
+    setPending(false)
     setSent(true)
   }
 

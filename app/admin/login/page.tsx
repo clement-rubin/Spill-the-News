@@ -109,7 +109,7 @@ export default function AdminLoginPage() {
           <ol>
             <li>Cliquez sur « Créez-en un » ci-dessus pour ouvrir le formulaire d&apos;inscription.</li>
             <li>Renseignez votre nom, votre email et un mot de passe (6 caractères minimum).</li>
-            <li>Confirmez votre adresse via le lien reçu par email, puis connectez-vous.</li>
+            <li>Une fois inscrit, vous êtes connecté automatiquement et redirigé vers l&apos;espace contributeurs.</li>
             <li>Chaque article que vous publiez affiche votre nom comme auteur, visible sur sa page.</li>
           </ol>
         </div>
