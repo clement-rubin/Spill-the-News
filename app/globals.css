@@ -1172,6 +1172,41 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
 
 .auth-card .btn { width: 100%; justify-content: center; margin-top: 2rem; }
 
+.account-bar {
+  background: #2a2420;
+  border-bottom: 1px solid var(--line);
+}
+
+.account-bar-inner {
+  max-width: var(--wrap);
+  margin: 0 auto;
+  padding: 0.7rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.account-bar-user {
+  font-size: 0.82rem;
+  color: #f3e9d8;
+  font-weight: 600;
+}
+
+.account-bar-user:hover { color: var(--pink); }
+
+.account-bar-logout {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: #c9bba0;
+  cursor: pointer;
+}
+
+.account-bar-logout:hover { color: var(--pink); }
+
 .admin-shell {
   max-width: var(--wrap);
   margin: 0 auto;
