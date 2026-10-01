@@ -1199,12 +1199,28 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
 }
 
 .account-bar-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
   font-size: 0.82rem;
   color: #f3e9d8;
   font-weight: 600;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid rgba(243, 233, 216, 0.3);
+  border-radius: 999px;
+  transition: border-color 0.15s, color 0.15s;
 }
 
-.account-bar-user:hover { color: var(--pink); }
+.account-bar-hint {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #c9bba0;
+}
+
+.account-bar-user:hover,
+.account-bar-user:hover .account-bar-hint { color: var(--pink); }
+.account-bar-user:hover { border-color: var(--pink); }
 
 .account-bar-logout {
   background: none;

@@ -15,8 +15,13 @@ export default function AccountBar({ name, email }: { name: string | null; email
   return (
     <div className="account-bar">
       <div className="account-bar-inner">
-        <Link href="/admin/account" className="account-bar-user">
-          {name || email || 'Mon compte'}
+        <Link
+          href="/admin/account"
+          className="account-bar-user"
+          title="Modifier mon profil et mon mot de passe"
+        >
+          <span className="account-bar-name">{name || email || 'Mon compte'}</span>
+          <span className="account-bar-hint">Mon compte · mot de passe →</span>
         </Link>
         <button type="button" className="account-bar-logout" onClick={handleLogout}>
           Se déconnecter
