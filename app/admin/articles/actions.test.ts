@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
-  getServerSession: vi.fn(),
+  getCurrentUser: vi.fn(),
   revalidatePath: vi.fn(),
   redirect: vi.fn(),
   createArticle: vi.fn(),
@@ -12,10 +12,9 @@ const mocks = vi.hoisted(() => ({
   removeCover: vi.fn(),
 }))
 
-vi.mock('next-auth', () => ({ getServerSession: mocks.getServerSession }))
+vi.mock('@/lib/session', () => ({ getCurrentUser: mocks.getCurrentUser }))
 vi.mock('next/cache', () => ({ revalidatePath: mocks.revalidatePath }))
 vi.mock('next/navigation', () => ({ redirect: mocks.redirect }))
-vi.mock('@/lib/auth', () => ({ authOptions: {} }))
 vi.mock('@/lib/articles', () => ({
   createArticle: mocks.createArticle,
   updateArticle: mocks.updateArticle,
@@ -65,7 +64,7 @@ beforeEach(() => {
   mocks.redirect.mockImplementation((path) => {
     throw new Error(`NEXT_REDIRECT:${path}`)
   })
-  mocks.getServerSession.mockResolvedValue({ user: { id: 'author-1' } })
+  mocks.getCurrentUser.mockResolvedValue({ id: 'author-1', email: 'author@example.com', name: 'Author' })
   mocks.getArticleById.mockResolvedValue(existing)
   mocks.resolveCoverField.mockResolvedValue({})
   // clearAllMocks leaves resolved/rejected behaviours in place, so the write
@@ -224,7 +223,7 @@ describe('deleteArticleAction', () => {
 
 describe('authentication', () => {
   it('sends an anonymous editor to the login page instead of writing', async () => {
-    mocks.getServerSession.mockResolvedValue(null)
+    mocks.getCurrentUser.mockResolvedValue(null)
 
     await expect(updateArticleAction({}, form(validFields))).rejects.toThrow(
       'NEXT_REDIRECT:/admin/login'
@@ -233,7 +232,7 @@ describe('authentication', () => {
   })
 
   it('guards the delete action too', async () => {
-    mocks.getServerSession.mockResolvedValue(null)
+    mocks.getCurrentUser.mockResolvedValue(null)
 
     await expect(deleteArticleAction(form({ id: 'article-1' }))).rejects.toThrow(
       'NEXT_REDIRECT:/admin/login'
@@ -242,7 +241,7 @@ describe('authentication', () => {
   })
 
   it('guards the create action too', async () => {
-    mocks.getServerSession.mockResolvedValue(null)
+    mocks.getCurrentUser.mockResolvedValue(null)
 
     await expect(
       createArticleAction({}, form({ title: 'T', category: 'C', body: 'B' }))

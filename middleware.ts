@@ -1,12 +1,36 @@
-import { withAuth } from 'next-auth/middleware'
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
-// The bare `export { default } from 'next-auth/middleware'` does not know
-// about the custom sign-in page configured in `authOptions.pages.signIn` —
-// it falls back to NextAuth's built-in `/api/auth/signin`. Passing `pages`
-// here explicitly makes the middleware redirect to our own `/admin/login`.
-export default withAuth({
-  pages: { signIn: '/admin/login' },
-})
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({ request })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          response = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
+        },
+      },
+    }
+  )
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.redirect(new URL('/admin/login', request.url))
+  }
+
+  return response
+}
 
 export const config = {
   // Two patterns: the bare "/admin" dashboard route, plus everything under

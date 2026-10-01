@@ -2,8 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getCurrentUser } from '@/lib/session'
 import { createIssue, deleteIssue, dispatchIssue, type Recurrence } from '@/lib/newsletterIssues'
 
 export interface FormState {
@@ -12,8 +11,8 @@ export interface FormState {
 }
 
 async function requireAuth() {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.id) redirect('/admin/login')
+  const user = await getCurrentUser()
+  if (!user) redirect('/admin/login')
 }
 
 export async function sendNewsletterAction(_prev: FormState, formData: FormData): Promise<FormState> {

@@ -1,15 +1,14 @@
 import Link from 'next/link'
-import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
-import { authOptions } from '@/lib/auth'
+import { getCurrentUser } from '@/lib/session'
 import { updateProfileAction, changePasswordAction } from './actions'
 import { ProfileForm, PasswordForm } from '@/components/admin/AccountForms'
 
 export const metadata = { title: 'Mon compte — Spill the News' }
 
 export default async function AccountPage() {
-  const session = await getServerSession(authOptions)
-  if (!session?.user) redirect('/admin/login')
+  const user = await getCurrentUser()
+  if (!user) redirect('/admin/login')
 
   return (
     <div className="admin-shell">
@@ -27,10 +26,10 @@ export default async function AccountPage() {
         <div className="section-head">
           <div>
             <h2>Profil</h2>
-            <p className="section-count">{session.user.email}</p>
+            <p className="section-count">{user.email}</p>
           </div>
         </div>
-        <ProfileForm action={updateProfileAction} name={session.user.name ?? ''} />
+        <ProfileForm action={updateProfileAction} name={user.name} />
       </section>
 
       <section className="admin-section">

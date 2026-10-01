@@ -2,8 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getCurrentUser } from '@/lib/session'
 import {
   createArticle,
   updateArticle,
@@ -17,9 +16,9 @@ export interface FormState {
 }
 
 async function requireAuthorId() {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.id) redirect('/admin/login')
-  return session.user.id
+  const user = await getCurrentUser()
+  if (!user) redirect('/admin/login')
+  return user.id
 }
 
 function read(formData: FormData) {

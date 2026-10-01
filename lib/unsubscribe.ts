@@ -1,7 +1,7 @@
 import crypto from 'crypto'
 
 function secret(): string {
-  return process.env.NEXTAUTH_SECRET ?? ''
+  return process.env.APP_SECRET ?? ''
 }
 
 export function unsubscribeToken(email: string): string {
@@ -16,7 +16,7 @@ export function verifyUnsubscribeToken(email: string, token: string): boolean {
 }
 
 export function unsubscribeUrl(email: string): string {
-  const base = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
+  const base = process.env.SITE_URL ?? 'http://localhost:3000'
   const token = unsubscribeToken(email)
   const params = new URLSearchParams({ email, token })
   return `${base}/api/newsletter/unsubscribe?${params.toString()}`
