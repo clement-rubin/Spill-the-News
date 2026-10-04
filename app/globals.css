@@ -1321,6 +1321,39 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
   color: var(--muted);
 }
 
+.stat-rankings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.8rem;
+}
+
+.stat-ranking h3 {
+  font-size: 0.76rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.stat-ranking ol { list-style: none; padding: 0; margin-top: 0.4rem; }
+
+.stat-ranking .admin-row > div { display: flex; align-items: baseline; gap: 0.7rem; min-width: 0; }
+
+.stat-ranking a { color: inherit; }
+
+.stat-ranking a:hover strong { color: var(--pink); }
+
+.stat-rank {
+  font-family: var(--font-display);
+  color: var(--pink);
+  font-size: 0.95rem;
+  min-width: 1rem;
+}
+
+.stat-empty { margin-top: 0.8rem; }
+
 .admin-sql {
   margin-top: 0.8rem;
   padding: 1rem 1.1rem;

@@ -2,13 +2,14 @@
 
 import { useEffect } from 'react'
 import { usePathname } from 'next/navigation'
+import { isContentPath } from '@/lib/contentPath'
 
 export default function VisitTracker() {
   const pathname = usePathname()
 
   useEffect(() => {
-    // The admin workspace is the contributors' own traffic, not real visits.
-    if (pathname.startsWith('/admin')) return
+    // Stats only cover articles and episodes; every other page is ignored.
+    if (!isContentPath(pathname)) return
 
     fetch('/api/track', {
       method: 'POST',

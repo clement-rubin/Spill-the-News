@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { isContentPath } from '@/lib/contentPath'
 
 // Supabase table required:
 //   CREATE TABLE page_views (
@@ -18,6 +19,8 @@ export async function POST(request: Request) {
   }
 
   if (!path) return NextResponse.json({ error: 'Chemin invalide' }, { status: 400 })
+  // Only article and episode pages are counted, so anything else is dropped.
+  if (!isContentPath(path)) return NextResponse.json({ ok: true, ignored: true })
 
   const { error } = await supabase.from('page_views').insert({ path })
 
