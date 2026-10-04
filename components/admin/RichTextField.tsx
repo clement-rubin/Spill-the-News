@@ -10,6 +10,13 @@ const FONTS = [
   { label: 'Verdana', value: 'Verdana, sans-serif' },
 ]
 
+const ALIGNMENTS = [
+  { value: 'left', title: 'Aligner à gauche' },
+  { value: 'center', title: 'Centrer' },
+  { value: 'right', title: 'Aligner à droite' },
+  { value: 'justify', title: 'Justifier' },
+]
+
 interface Props {
   id: string
   name: string
@@ -39,6 +46,35 @@ export default function RichTextField({ id, name, defaultValue }: Props) {
     wrapSelection('[', `](${url})`, 'texte du lien')
   }
 
+  // Blank lines around the content let marked keep parsing the Markdown inside the div.
+  function align(value: string) {
+    const el = ref.current
+    if (!el) return
+
+    // Trim the blank lines a quote leaves behind so they don't pile up.
+    const selected = el.value.slice(el.selectionStart, el.selectionEnd).trim()
+    el.setRangeText(selected, el.selectionStart, el.selectionEnd, 'select')
+    wrapSelection(`\n\n<div style="text-align: ${value}">\n\n`, '\n\n</div>\n\n', 'texte aligné')
+  }
+
+  function quote() {
+    const el = ref.current
+    if (!el) return
+
+    const start = el.selectionStart
+    const end = el.selectionEnd
+    const selected = el.value.slice(start, end) || 'citation'
+    const quoted = selected
+      .split('\n')
+      .map((line) => `> ${line}`)
+      .join('\n')
+
+    el.value = el.value.slice(0, start) + '\n\n' + quoted + '\n\n' + el.value.slice(end)
+    el.focus()
+    const cursor = start + quoted.length + 4
+    el.setSelectionRange(cursor, cursor)
+  }
+
   function applyFont(fontFamily: string) {
     if (!fontFamily) return
     wrapSelection(`<span style="font-family: ${fontFamily}">`, '</span>', 'texte')
@@ -59,6 +95,14 @@ export default function RichTextField({ id, name, defaultValue }: Props) {
         <button type="button" className="rte-btn" title="Lien" onMouseDown={(e) => e.preventDefault()} onClick={insertLink}>
           🔗
         </button>
+        <button type="button" className="rte-btn" title="Citation" onMouseDown={(e) => e.preventDefault()} onClick={quote}>
+          ❝
+        </button>
+        {ALIGNMENTS.map((a) => (
+          <button key={a.value} type="button" className="rte-btn" title={a.title} aria-label={a.title} onMouseDown={(e) => e.preventDefault()} onClick={() => align(a.value)}>
+            <AlignIcon value={a.value} />
+          </button>
+        ))}
         <select
           className="rte-font"
           aria-label="Police d'écriture"
@@ -78,5 +122,18 @@ export default function RichTextField({ id, name, defaultValue }: Props) {
       </div>
       <textarea ref={ref} id={id} name={name} className="textarea" defaultValue={defaultValue} required />
     </div>
+  )
+}
+
+/** Four lines whose lengths and offsets mimic each alignment. */
+function AlignIcon({ value }: { value: string }) {
+  const widths = value === 'justify' ? [14, 14, 14, 14] : [14, 9, 12, 8]
+  return (
+    <svg width="16" height="14" viewBox="0 0 16 14" aria-hidden>
+      {widths.map((w, i) => {
+        const x = value === 'center' ? (16 - w) / 2 : value === 'right' ? 15 - w : 1
+        return <rect key={i} x={x} y={1 + i * 3.5} width={w} height="1.6" rx="0.8" fill="currentColor" />
+      })}
+    </svg>
   )
 }

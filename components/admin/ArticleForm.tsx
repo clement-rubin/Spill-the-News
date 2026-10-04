@@ -85,8 +85,8 @@ export default function ArticleForm({ action, authors, defaultAuthorId, article 
         <label htmlFor="body">Contenu</label>
         <RichTextField id="body" name="body" defaultValue={article?.body} />
         <p className="field-hint">
-          Utilisez la barre d&apos;outils pour mettre en gras, souligner, changer la police ou
-          insérer un lien. Markdown accepté aussi : <code>## Titre</code>, <code>**gras**</code>,{' '}
+          Utilisez la barre d&apos;outils pour mettre en gras, souligner, changer la police,
+          insérer un lien, une citation ou aligner/justifier un passage. Markdown accepté aussi : <code>## Titre</code>, <code>**gras**</code>,{' '}
           <code>[lien](https://…)</code>.
         </p>
       </div>
