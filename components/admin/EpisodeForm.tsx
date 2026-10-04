@@ -2,13 +2,17 @@
 
 import { useFormState, useFormStatus } from 'react-dom'
 import Link from 'next/link'
+import AuthorField from './AuthorField'
 import CoverField from './CoverField'
 import type { FormState } from '@/app/admin/episodes/actions'
+import type { AuthorOption } from '@/lib/users'
 
 type Action = (prev: FormState, formData: FormData) => Promise<FormState>
 
 interface Props {
   action: Action
+  authors: AuthorOption[]
+  defaultAuthorId: string
   episode?: {
     id: string
     title: string
@@ -27,7 +31,7 @@ function SubmitButton({ label }: { label: string }) {
   )
 }
 
-export default function EpisodeForm({ action, episode }: Props) {
+export default function EpisodeForm({ action, authors, defaultAuthorId, episode }: Props) {
   const [state, formAction] = useFormState(action, {})
 
   return (
@@ -58,6 +62,12 @@ export default function EpisodeForm({ action, episode }: Props) {
         />
         <p className="field-hint">Lien de l&apos;épisode sur Spotify.</p>
       </div>
+
+      <AuthorField
+        authors={authors}
+        defaultValue={defaultAuthorId}
+        hint="Nom affiché sur la page de l’épisode."
+      />
 
       <CoverField
         defaultValue={episode?.coverImage ?? null}

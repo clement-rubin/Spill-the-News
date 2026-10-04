@@ -13,6 +13,7 @@ export interface UpdateEpisodeInput {
   description?: string
   externalLink?: string
   coverImage?: string | null
+  authorId?: string
 }
 
 interface AuthorRow {
@@ -100,6 +101,7 @@ export async function updateEpisode(id: string, input: UpdateEpisodeInput): Prom
   if (input.description !== undefined) patch.description = input.description
   if (input.externalLink !== undefined) patch.external_link = input.externalLink
   if (input.coverImage !== undefined) patch.cover_image = input.coverImage
+  if (input.authorId !== undefined) patch.author_id = input.authorId
 
   const { data, error } = await supabase
     .from('episodes')

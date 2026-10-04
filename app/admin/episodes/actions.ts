@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/session'
 import { createEpisode, updateEpisode, deleteEpisode, getEpisodeById } from '@/lib/episodes'
 import { resolveCoverField, removeCover } from '@/lib/storage'
+import { authorExists } from '@/lib/users'
 
 export interface FormState {
   error?: string
@@ -39,6 +40,13 @@ function read(formData: FormData) {
   return { title, description, externalLink }
 }
 
+/** The picked author, the fallback when the field is absent, or null if unknown. */
+async function readAuthor(formData: FormData, fallback: string): Promise<string | null> {
+  const picked = String(formData.get('authorId') ?? '').trim()
+  if (!picked) return fallback
+  return (await authorExists(picked)) ? picked : null
+}
+
 function message(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback
 }
@@ -47,9 +55,12 @@ export async function createEpisodeAction(
   _prev: FormState,
   formData: FormData
 ): Promise<FormState> {
-  const authorId = await requireAuthorId()
+  const currentUserId = await requireAuthorId()
   const parsed = read(formData)
   if (parsed.error) return { error: parsed.error }
+
+  const authorId = await readAuthor(formData, currentUserId)
+  if (!authorId) return { error: 'Auteur introuvable.' }
 
   const cover = await resolveCoverField(formData, 'episodes')
   if (cover.error) return { error: cover.error }
@@ -81,11 +92,14 @@ export async function updateEpisodeAction(
   const parsed = read(formData)
   if (parsed.error) return { error: parsed.error }
 
+  const authorId = await readAuthor(formData, current.authorId)
+  if (!authorId) return { error: 'Auteur introuvable.' }
+
   const cover = await resolveCoverField(formData, 'episodes', current.coverImage)
   if (cover.error) return { error: cover.error }
 
   try {
-    await updateEpisode(id, { ...parsed, coverImage: cover.coverImage })
+    await updateEpisode(id, { ...parsed, coverImage: cover.coverImage, authorId })
   } catch (error) {
     await removeCover(cover.coverImage)
     return { error: message(error, 'Enregistrement impossible.') }
@@ -96,6 +110,7 @@ export async function updateEpisodeAction(
 
   revalidatePath('/admin')
   revalidatePath('/podcast')
+  revalidatePath(`/podcast/${id}`)
   revalidatePath('/')
   redirect('/admin')
 }

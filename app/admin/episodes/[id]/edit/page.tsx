@@ -2,12 +2,13 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import EpisodeForm from '@/components/admin/EpisodeForm'
 import { getEpisodeById } from '@/lib/episodes'
+import { getAuthors } from '@/lib/users'
 import { updateEpisodeAction, deleteEpisodeAction } from '../../actions'
 
 export const metadata = { title: 'Modifier un épisode — Spill the News' }
 
 export default async function EditEpisodePage({ params }: { params: { id: string } }) {
-  const episode = await getEpisodeById(params.id)
+  const [episode, authors] = await Promise.all([getEpisodeById(params.id), getAuthors()])
   if (!episode) notFound()
 
   return (
@@ -21,7 +22,12 @@ export default async function EditEpisodePage({ params }: { params: { id: string
         <h1>Modifier</h1>
       </header>
 
-      <EpisodeForm action={updateEpisodeAction} episode={episode} />
+      <EpisodeForm
+        action={updateEpisodeAction}
+        authors={authors}
+        defaultAuthorId={episode.authorId}
+        episode={episode}
+      />
 
       <form action={deleteEpisodeAction} className="danger-zone">
         <input type="hidden" name="id" value={episode.id} />

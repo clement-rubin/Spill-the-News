@@ -2,6 +2,7 @@
 
 import { useFormState, useFormStatus } from 'react-dom'
 import Link from 'next/link'
+import AuthorField from './AuthorField'
 import CoverField from './CoverField'
 import RichTextField from './RichTextField'
 import type { FormState } from '@/app/admin/articles/actions'
@@ -61,23 +62,11 @@ export default function ArticleForm({ action, authors, defaultAuthorId, article 
         />
       </div>
 
-      <div className="field">
-        <label htmlFor="authorId">Auteur</label>
-        <select
-          id="authorId"
-          name="authorId"
-          className="input"
-          defaultValue={defaultAuthorId}
-          required
-        >
-          {authors.map((author) => (
-            <option key={author.id} value={author.id}>
-              {author.name}
-            </option>
-          ))}
-        </select>
-        <p className="field-hint">Nom affiché sous le titre de l&apos;article.</p>
-      </div>
+      <AuthorField
+        authors={authors}
+        defaultValue={defaultAuthorId}
+        hint="Nom affiché sous le titre de l’article."
+      />
 
       <CoverField defaultValue={article?.coverImage ?? null} />
 
