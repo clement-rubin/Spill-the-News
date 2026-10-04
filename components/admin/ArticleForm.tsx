@@ -5,11 +5,14 @@ import Link from 'next/link'
 import CoverField from './CoverField'
 import RichTextField from './RichTextField'
 import type { FormState } from '@/app/admin/articles/actions'
+import type { AuthorOption } from '@/lib/users'
 
 type Action = (prev: FormState, formData: FormData) => Promise<FormState>
 
 interface Props {
   action: Action
+  authors: AuthorOption[]
+  defaultAuthorId: string
   article?: {
     id: string
     title: string
@@ -28,7 +31,7 @@ function SubmitButton({ label }: { label: string }) {
   )
 }
 
-export default function ArticleForm({ action, article }: Props) {
+export default function ArticleForm({ action, authors, defaultAuthorId, article }: Props) {
   const [state, formAction] = useFormState(action, {})
 
   return (
@@ -56,6 +59,24 @@ export default function ArticleForm({ action, article }: Props) {
           defaultValue={article?.category}
           required
         />
+      </div>
+
+      <div className="field">
+        <label htmlFor="authorId">Auteur</label>
+        <select
+          id="authorId"
+          name="authorId"
+          className="input"
+          defaultValue={defaultAuthorId}
+          required
+        >
+          {authors.map((author) => (
+            <option key={author.id} value={author.id}>
+              {author.name}
+            </option>
+          ))}
+        </select>
+        <p className="field-hint">Nom affiché sous le titre de l&apos;article.</p>
       </div>
 
       <CoverField defaultValue={article?.coverImage ?? null} />

@@ -1,10 +1,14 @@
 import Link from 'next/link'
 import ArticleForm from '@/components/admin/ArticleForm'
+import { getCurrentUser } from '@/lib/session'
+import { getAuthors } from '@/lib/users'
 import { createArticleAction } from '../actions'
 
 export const metadata = { title: 'Nouvel article — Spill the News' }
 
-export default function NewArticlePage() {
+export default async function NewArticlePage() {
+  const [authors, user] = await Promise.all([getAuthors(), getCurrentUser()])
+
   return (
     <div className="admin-shell admin-shell--form">
       <Link href="/admin" className="detail-back">
@@ -16,7 +20,11 @@ export default function NewArticlePage() {
         <h1>Nouvel article</h1>
       </header>
 
-      <ArticleForm action={createArticleAction} />
+      <ArticleForm
+        action={createArticleAction}
+        authors={authors}
+        defaultAuthorId={user?.id ?? ''}
+      />
     </div>
   )
 }

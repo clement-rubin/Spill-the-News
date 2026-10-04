@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   getArticleById: vi.fn(),
   resolveCoverField: vi.fn(),
   removeCover: vi.fn(),
+  authorExists: vi.fn(),
 }))
 
 vi.mock('@/lib/session', () => ({ getCurrentUser: mocks.getCurrentUser }))
@@ -21,6 +22,7 @@ vi.mock('@/lib/articles', () => ({
   deleteArticle: mocks.deleteArticle,
   getArticleById: mocks.getArticleById,
 }))
+vi.mock('@/lib/users', () => ({ authorExists: mocks.authorExists }))
 vi.mock('@/lib/storage', () => ({
   resolveCoverField: mocks.resolveCoverField,
   removeCover: mocks.removeCover,
@@ -41,6 +43,7 @@ const existing = {
   category: 'Culture',
   body: 'Corps',
   coverImage: STORED,
+  authorId: 'author-1',
 }
 
 function form(fields) {
@@ -73,6 +76,7 @@ beforeEach(() => {
   mocks.updateArticle.mockResolvedValue(undefined)
   mocks.deleteArticle.mockResolvedValue(undefined)
   mocks.removeCover.mockResolvedValue(undefined)
+  mocks.authorExists.mockResolvedValue(true)
 })
 
 /** Success paths end in redirect(), which unwinds by throwing. */
@@ -92,6 +96,7 @@ describe('updateArticleAction', () => {
       category: 'Culture',
       body: 'Corps',
       coverImage: undefined,
+      authorId: 'author-1',
     })
     // Nothing was replaced, so the stored file must survive.
     expect(mocks.removeCover).not.toHaveBeenCalled()
@@ -159,6 +164,25 @@ describe('updateArticleAction', () => {
     expect(mocks.updateArticle).not.toHaveBeenCalled()
   })
 
+  it('reassigns the article to the picked author', async () => {
+    await run(updateArticleAction({}, form({ ...validFields, authorId: 'author-2' })))
+
+    expect(mocks.authorExists).toHaveBeenCalledWith('author-2')
+    expect(mocks.updateArticle).toHaveBeenCalledWith(
+      'article-1',
+      expect.objectContaining({ authorId: 'author-2' })
+    )
+  })
+
+  it('refuses an author that does not exist', async () => {
+    mocks.authorExists.mockResolvedValue(false)
+
+    const state = await run(updateArticleAction({}, form({ ...validFields, authorId: 'ghost' })))
+
+    expect(state).toEqual({ error: 'Auteur introuvable.' })
+    expect(mocks.updateArticle).not.toHaveBeenCalled()
+  })
+
   it('refreshes the pages that show the article', async () => {
     await run(updateArticleAction({}, form(validFields)))
 
@@ -181,6 +205,23 @@ describe('createArticleAction', () => {
       coverImage: undefined,
       authorId: 'author-1',
     })
+  })
+
+  it('signs the article with the picked author', async () => {
+    await run(createArticleAction({}, form({ ...newFields, authorId: 'author-2' })))
+
+    expect(mocks.createArticle).toHaveBeenCalledWith(
+      expect.objectContaining({ authorId: 'author-2' })
+    )
+  })
+
+  it('does not publish under an unknown author', async () => {
+    mocks.authorExists.mockResolvedValue(false)
+
+    const state = await run(createArticleAction({}, form({ ...newFields, authorId: 'ghost' })))
+
+    expect(state).toEqual({ error: 'Auteur introuvable.' })
+    expect(mocks.createArticle).not.toHaveBeenCalled()
   })
 
   it('publishes without a cover when none is given', async () => {

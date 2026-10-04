@@ -2,12 +2,13 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import ArticleForm from '@/components/admin/ArticleForm'
 import { getArticleById } from '@/lib/articles'
+import { getAuthors } from '@/lib/users'
 import { updateArticleAction, deleteArticleAction } from '../../actions'
 
 export const metadata = { title: 'Modifier un article — Spill the News' }
 
 export default async function EditArticlePage({ params }: { params: { id: string } }) {
-  const article = await getArticleById(params.id)
+  const [article, authors] = await Promise.all([getArticleById(params.id), getAuthors()])
   if (!article) notFound()
 
   return (
@@ -21,7 +22,12 @@ export default async function EditArticlePage({ params }: { params: { id: string
         <h1>Modifier</h1>
       </header>
 
-      <ArticleForm action={updateArticleAction} article={article} />
+      <ArticleForm
+        action={updateArticleAction}
+        authors={authors}
+        defaultAuthorId={article.authorId}
+        article={article}
+      />
 
       <form action={deleteArticleAction} className="danger-zone">
         <input type="hidden" name="id" value={article.id} />

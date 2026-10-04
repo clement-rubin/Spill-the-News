@@ -14,6 +14,7 @@ export interface UpdateArticleInput {
   body?: string
   category?: string
   coverImage?: string | null
+  authorId?: string
 }
 
 interface AuthorRow {
@@ -133,6 +134,7 @@ export async function updateArticle(id: string, input: UpdateArticleInput): Prom
   if (input.body !== undefined) patch.body = input.body
   if (input.category !== undefined) patch.category = input.category
   if (input.coverImage !== undefined) patch.cover_image = input.coverImage
+  if (input.authorId !== undefined) patch.author_id = input.authorId
 
   const { data, error } = await supabase
     .from('articles')
