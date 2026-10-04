@@ -57,7 +57,7 @@ export default function AdminLoginPage() {
             <li>Cliquez sur « Créer mon compte » ci-dessous.</li>
             <li>Renseignez votre nom, votre email et un mot de passe (6 caractères minimum).</li>
             <li>Une fois inscrit, vous êtes connecté automatiquement.</li>
-            <li>Chaque article publié affiche votre nom comme auteur.</li>
+            <li>Votre nom apparaît ensuite dans la liste des auteurs : choisissez-le au moment de publier un article.</li>
           </ol>
           <Link href="/signup" className="btn auth-tuto-cta">Créer mon compte</Link>
           <p className="auth-tuto-note">Vous avez déjà un compte ? Connectez-vous avec le formulaire ci-dessous.</p>
