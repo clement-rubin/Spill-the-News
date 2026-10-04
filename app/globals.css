@@ -923,6 +923,21 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
 
 .auth-tuto li { font-size: 0.88rem; color: var(--ink); line-height: 1.4; }
 
+.auth-tuto-top { margin-top: 1.5rem; border-color: var(--pink); }
+
+.auth-tuto-cta {
+  display: block;
+  margin-top: 1rem;
+  text-align: center;
+  text-decoration: none;
+}
+
+.auth-card .auth-tuto-note {
+  margin-top: 0.7rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
 .field { display: grid; gap: 0.45rem; margin-top: 1.5rem; }
 
 .field label {

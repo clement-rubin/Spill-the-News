@@ -51,6 +51,18 @@ export default function AdminLoginPage() {
         <h1>Connexion</h1>
         <p>Espace contributeurs de Spill the News.</p>
 
+        <div className="auth-tuto auth-tuto-top">
+          <h2>Nouveau ? Il faut d&apos;abord créer un compte</h2>
+          <ol>
+            <li>Cliquez sur « Créer mon compte » ci-dessous.</li>
+            <li>Renseignez votre nom, votre email et un mot de passe (6 caractères minimum).</li>
+            <li>Une fois inscrit, vous êtes connecté automatiquement.</li>
+            <li>Chaque article publié affiche votre nom comme auteur.</li>
+          </ol>
+          <Link href="/signup" className="btn auth-tuto-cta">Créer mon compte</Link>
+          <p className="auth-tuto-note">Vous avez déjà un compte ? Connectez-vous avec le formulaire ci-dessous.</p>
+        </div>
+
         <form onSubmit={handleSubmit}>
           <div className="field">
             <label htmlFor="email">Email</label>
@@ -98,21 +110,8 @@ export default function AdminLoginPage() {
         </form>
 
         <p className="auth-switch">
-          Pas encore de compte ? <Link href="/signup">Créez-en un</Link>
-        </p>
-        <p className="auth-switch">
           <Link href="/forgot-password">Mot de passe oublié ?</Link>
         </p>
-
-        <div className="auth-tuto">
-          <h2>Comment rejoindre l&apos;équipe ?</h2>
-          <ol>
-            <li>Cliquez sur « Créez-en un » ci-dessus pour ouvrir le formulaire d&apos;inscription.</li>
-            <li>Renseignez votre nom, votre email et un mot de passe (6 caractères minimum).</li>
-            <li>Une fois inscrit, vous êtes connecté automatiquement et redirigé vers l&apos;espace contributeurs.</li>
-            <li>Chaque article que vous publiez affiche votre nom comme auteur, visible sur sa page.</li>
-          </ol>
-        </div>
       </div>
     </div>
   )
