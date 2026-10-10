@@ -710,6 +710,29 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
 
 .prose img { margin: 2.25rem 0; border: 1px solid var(--line); }
 
+/* Photos placed from the editor: one per row, or a grid when several follow
+   each other. The caption sits right under its own photo. */
+.prose .photos { margin: 2.25rem 0; }
+.prose .photos--grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  align-items: start;
+}
+.prose .photos figure { margin: 0; }
+.prose .photos img { margin: 0; width: 100%; border-radius: 14px; }
+.prose .photos figcaption {
+  margin-top: 0.55rem;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+@media (max-width: 620px) {
+  .prose .photos--grid { grid-template-columns: 1fr; }
+}
+
 .prose code {
   padding: 0.12em 0.35em;
   background: var(--paper-deep);
@@ -985,6 +1008,9 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
 }
 
 .rte-btn:hover { border-color: var(--pink); background: #fff6ea; }
+
+.rte-btn--wide { width: auto; padding: 0 0.7rem; font-size: 0.85rem; font-weight: 700; }
+.rte-btn:disabled { opacity: 0.5; cursor: progress; }
 
 .rte-font {
   padding: 0.5rem 0.6rem;

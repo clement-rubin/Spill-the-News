@@ -28,6 +28,8 @@ import {
   MAX_COVER_BYTES,
   coverStorageName,
   managedCoverPath,
+  managedImagesIn,
+  removeDroppedImages,
   removeCover,
   resolveCoverField,
   uploadCover,
@@ -222,5 +224,25 @@ describe('resolveCoverField', () => {
   it('has nothing to do on a fresh form left empty', async () => {
     const result = await resolveCoverField(new FormData(), 'episodes')
     expect(result).toEqual({ coverImage: null })
+  })
+})
+
+describe('body photos', () => {
+  const a = `${PUBLIC}/articles/1-a.webp`
+  const b = `${PUBLIC}/articles/2-b.webp`
+
+  it('lists only our own photos, once each', () => {
+    const body = `![Un](${a})\n![Deux](${b})\n![Ailleurs](https://example.com/x.png)\n![Encore](${a})`
+    expect(managedImagesIn(body)).toEqual([a, b])
+  })
+
+  it('removes the photos the new body dropped and keeps the others', async () => {
+    await removeDroppedImages(`![Un](${a})\n![Deux](${b})`, `![Deux](${b})`)
+    expect(bucket.remove).toHaveBeenCalledWith(['articles/1-a.webp'])
+  })
+
+  it('does not call storage when nothing was dropped', async () => {
+    await removeDroppedImages(`![Un](${a})`, `Texte\n![Un](${a})`)
+    expect(bucket.remove).not.toHaveBeenCalled()
   })
 })

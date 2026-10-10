@@ -102,6 +102,21 @@ export async function removeCover(url: string | null | undefined): Promise<void>
   await supabase.storage.from(COVER_BUCKET).remove([path])
 }
 
+/** Every photo of ours a Markdown body points at, so dropped ones can be cleaned up. */
+export function managedImagesIn(body: string): string[] {
+  const urls = body.match(/https?:\/\/[^\s)"'<>]+/g) ?? []
+  return Array.from(new Set(urls.filter((url) => managedCoverPath(url))))
+}
+
+/** Removes the photos `before` used and `after` no longer does. */
+export async function removeDroppedImages(before: string, after = ''): Promise<void> {
+  const kept = new Set(managedImagesIn(after))
+  const paths = managedImagesIn(before)
+    .filter((url) => !kept.has(url))
+    .map((url) => managedCoverPath(url) as string)
+  if (paths.length) await supabase.storage.from(COVER_BUCKET).remove(paths)
+}
+
 export interface CoverField {
   /** undefined = leave the column alone, null = clear it, string = set it. */
   coverImage?: string | null

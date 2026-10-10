@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { marked } from 'marked'
+import { renderMarkdown } from '@/lib/markdown'
 import { getArticleBySlug } from '@/lib/articles'
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
@@ -42,8 +42,8 @@ export default async function ArticleDetailPage({ params }: { params: { slug: st
         </div>
       )}
 
-      {/* marked.parse does not sanitize — safe only because article.body is admin-authored, not public input */}
-      <div className="prose" dangerouslySetInnerHTML={{ __html: marked.parse(article.body) }} />
+      {/* renderMarkdown does not sanitize — safe only because article.body is admin-authored, not public input */}
+      <div className="prose" dangerouslySetInnerHTML={{ __html: renderMarkdown(article.body) }} />
     </article>
     </div>
   )

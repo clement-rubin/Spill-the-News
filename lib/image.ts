@@ -150,6 +150,42 @@ export async function encodeCover(
   }
 }
 
+/** Longest side of a photo placed in an article body. */
+export const PHOTO_MAX_SIDE = 1600
+
+/** The output size of a body photo: same ratio, never upscaled. */
+export function photoSize(source: Size): Size {
+  const scale = Math.min(1, PHOTO_MAX_SIDE / Math.max(source.width, source.height))
+  return {
+    width: Math.max(1, Math.round(source.width * scale)),
+    height: Math.max(1, Math.round(source.height * scale)),
+  }
+}
+
+/**
+ * Body photos keep their own framing, so unlike a cover they are only scaled
+ * down and re-encoded — a phone shot drops from ~4 MB to a few hundred KB.
+ */
+export async function encodePhoto(source: ImageBitmap, originalName: string): Promise<File> {
+  const size = photoSize({ width: source.width, height: source.height })
+  const canvas = document.createElement('canvas')
+  canvas.width = size.width
+  canvas.height = size.height
+
+  const context = canvas.getContext('2d')
+  if (!context) throw new Error('Conversion impossible sur ce navigateur.')
+  context.imageSmoothingEnabled = true
+  context.imageSmoothingQuality = 'high'
+  context.drawImage(source, 0, 0, size.width, size.height)
+
+  const webp = supportsWebp()
+  const type = webp ? 'image/webp' : 'image/jpeg'
+  const blob = await toBlob(canvas, type, 0.82)
+
+  const base = originalName.replace(/\.[^.]+$/, '').trim() || 'photo'
+  return new File([blob], `${base}.${webp ? 'webp' : 'jpg'}`, { type })
+}
+
 export function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} o`
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} Ko`

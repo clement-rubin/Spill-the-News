@@ -9,7 +9,7 @@ import {
   deleteArticle,
   getArticleById,
 } from '@/lib/articles'
-import { resolveCoverField, removeCover } from '@/lib/storage'
+import { resolveCoverField, removeCover, removeDroppedImages, uploadCover } from '@/lib/storage'
 import { authorExists } from '@/lib/users'
 
 export interface FormState {
@@ -102,6 +102,7 @@ export async function updateArticleAction(
 
   // undefined means the cover was left alone, so the stored file stays put.
   if (cover.coverImage !== undefined) await removeCover(current.coverImage)
+  await removeDroppedImages(current.body, parsed.body)
 
   revalidatePath('/admin')
   revalidatePath('/articles')
@@ -118,10 +119,29 @@ export async function deleteArticleAction(formData: FormData) {
   const current = await getArticleById(id)
   await deleteArticle(id)
   await removeCover(current?.coverImage)
+  if (current) await removeDroppedImages(current.body)
 
   revalidatePath('/admin')
   revalidatePath('/articles')
   if (current) revalidatePath(`/articles/${current.slug}`)
   revalidatePath('/')
   redirect('/admin')
+}
+
+export interface PhotoUpload {
+  url?: string
+  error?: string
+}
+
+/** Called by the editor's photo button; the photo is placed in the body as Markdown. */
+export async function uploadArticlePhotoAction(formData: FormData): Promise<PhotoUpload> {
+  await requireAuthorId()
+  const file = formData.get('photo')
+  if (!(file instanceof File) || file.size === 0) return { error: 'Aucune photo reçue.' }
+
+  try {
+    return { url: await uploadCover(file, 'articles') }
+  } catch (error) {
+    return { error: message(error, 'Envoi de la photo impossible.') }
+  }
 }

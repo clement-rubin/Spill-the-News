@@ -9,6 +9,8 @@ import {
   cropGeometry,
   formatBytes,
   needsCrop,
+  PHOTO_MAX_SIDE,
+  photoSize,
 } from './image'
 
 const RATIO_TOLERANCE = 0.02
@@ -118,5 +120,16 @@ describe('formatBytes', () => {
     expect(formatBytes(2048)).toBe('2 Ko')
     expect(formatBytes(5 * 1024 * 1024)).toBe('5 Mo')
     expect(formatBytes(1024 * 1024 * 1.5)).toBe('1,5 Mo')
+  })
+})
+
+describe('photoSize', () => {
+  it('scales the longest side down to the limit, keeping the ratio', () => {
+    expect(photoSize({ width: 4000, height: 3000 })).toEqual({ width: PHOTO_MAX_SIDE, height: 1200 })
+    expect(photoSize({ width: 3000, height: 4000 })).toEqual({ width: 1200, height: PHOTO_MAX_SIDE })
+  })
+
+  it('never upscales a small photo', () => {
+    expect(photoSize({ width: 800, height: 600 })).toEqual({ width: 800, height: 600 })
   })
 })

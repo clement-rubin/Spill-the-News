@@ -1,6 +1,7 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
+import { decodeCover, encodePhoto } from '@/lib/image'
 
 const FONTS = [
   { label: 'Police…', value: '' },
@@ -17,14 +18,26 @@ const ALIGNMENTS = [
   { value: 'justify', title: 'Justifier' },
 ]
 
+const PHOTO_TYPES = 'image/jpeg,image/png,image/webp,image/gif,image/avif'
+
+type PhotoUpload = (formData: FormData) => Promise<{ url?: string; error?: string }>
+
 interface Props {
   id: string
   name: string
   defaultValue?: string
+  /** Shows the photo button; omitted where photos make no sense (emails). */
+  uploadPhoto?: PhotoUpload
 }
 
-export default function RichTextField({ id, name, defaultValue }: Props) {
+export default function RichTextField({ id, name, defaultValue, uploadPhoto }: Props) {
   const ref = useRef<HTMLTextAreaElement>(null)
+  const photoInput = useRef<HTMLInputElement>(null)
+  // Where the cursor was when the photo button was pressed: the file picker
+  // and the uploads take the focus away, and the photos must land there.
+  const photoAnchor = useRef(0)
+  const [photoStatus, setPhotoStatus] = useState<string | null>(null)
+  const [photoError, setPhotoError] = useState<string | null>(null)
 
   function wrapSelection(before: string, after: string, placeholder: string) {
     const el = ref.current
@@ -32,12 +45,84 @@ export default function RichTextField({ id, name, defaultValue }: Props) {
 
     const start = el.selectionStart
     const end = el.selectionEnd
-    const selected = el.value.slice(start, end) || placeholder
+    const raw = el.value.slice(start, end)
+    // A double-click also selects the trailing space, and `**mot **` is not
+    // bold for marked — so the spaces stay outside the markers.
+    const lead = raw.match(/^\s*/)?.[0] ?? ''
+    const trail = raw.slice(lead.length).match(/\s*$/)?.[0] ?? ''
+    const selected = raw.slice(lead.length, raw.length - trail.length) || placeholder
 
-    el.value = el.value.slice(0, start) + before + selected + after + el.value.slice(end)
+    const inserted = lead + before + selected + after + trail
+    el.value = el.value.slice(0, start) + inserted + el.value.slice(end)
     el.focus()
-    const cursor = start + before.length + selected.length + after.length
+    const cursor = start + inserted.length
     el.setSelectionRange(cursor, cursor)
+  }
+
+  function insertBlock(block: string, at = ref.current?.selectionStart ?? 0, until = at) {
+    const el = ref.current
+    if (!el) return
+    const text = `\n\n${block}\n\n`
+    el.value = el.value.slice(0, at) + text + el.value.slice(until)
+    el.focus()
+    const cursor = at + text.length
+    el.setSelectionRange(cursor, cursor)
+  }
+
+  function heading() {
+    const el = ref.current
+    if (!el) return
+    const selected = el.value
+      .slice(el.selectionStart, el.selectionEnd)
+      .replace(/\s+/g, ' ')
+      .replace(/^[\s#*]+|[\s*]+$/g, '')
+    insertBlock(`## ${selected || 'Titre de partie'}`, el.selectionStart, el.selectionEnd)
+  }
+
+  function pickPhotos() {
+    photoAnchor.current = ref.current?.selectionEnd ?? ref.current?.value.length ?? 0
+    setPhotoError(null)
+    photoInput.current?.click()
+  }
+
+  async function addPhotos(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? [])
+    event.target.value = ''
+    if (!files.length || !uploadPhoto) return
+
+    // Captions are asked first so the writer is not left waiting between uploads.
+    const queued: { file: File; caption: string }[] = []
+    for (const file of files) {
+      const caption = window.prompt(
+        `Légende sous la photo « ${file.name} » (laisser vide pour aucune) :`,
+        ''
+      )
+      if (caption === null) continue
+      queued.push({ file, caption: caption.replace(/[[\]\r\n]+/g, ' ').trim() })
+    }
+    if (!queued.length) return
+
+    const lines: string[] = []
+    const failures: string[] = []
+    for (let index = 0; index < queued.length; index++) {
+      const { file, caption } = queued[index]
+      setPhotoStatus(`Envoi de la photo ${index + 1} sur ${queued.length}…`)
+      try {
+        const bitmap = await decodeCover(file)
+        const photo = await encodePhoto(bitmap, file.name)
+        bitmap.close()
+        const formData = new FormData()
+        formData.append('photo', photo)
+        const result = await uploadPhoto(formData)
+        if (!result.url) throw new Error(result.error ?? 'Envoi impossible.')
+        lines.push(`![${caption}](${result.url})`)
+      } catch (error) {
+        failures.push(`${file.name} : ${error instanceof Error ? error.message : 'illisible.'}`)
+      }
+    }
+    setPhotoStatus(null)
+    if (failures.length) setPhotoError(failures.join(' — '))
+    if (lines.length) insertBlock(lines.join('\n'), photoAnchor.current)
   }
 
   function insertLink() {
@@ -83,6 +168,9 @@ export default function RichTextField({ id, name, defaultValue }: Props) {
   return (
     <div className="rte">
       <div className="rte-toolbar" role="toolbar" aria-label="Mise en forme du texte">
+        <button type="button" className="rte-btn rte-btn--wide" title="Titre de partie" onMouseDown={(e) => e.preventDefault()} onClick={heading}>
+          Titre
+        </button>
         <button type="button" className="rte-btn" title="Gras" onMouseDown={(e) => e.preventDefault()} onClick={() => wrapSelection('**', '**', 'texte en gras')}>
           <strong>G</strong>
         </button>
@@ -98,6 +186,11 @@ export default function RichTextField({ id, name, defaultValue }: Props) {
         <button type="button" className="rte-btn" title="Citation" onMouseDown={(e) => e.preventDefault()} onClick={quote}>
           ❝
         </button>
+        {uploadPhoto && (
+          <button type="button" className="rte-btn rte-btn--wide" title="Ajouter une ou plusieurs photos avec légende" onMouseDown={(e) => e.preventDefault()} onClick={pickPhotos} disabled={!!photoStatus}>
+            📷 Photos
+          </button>
+        )}
         {ALIGNMENTS.map((a) => (
           <button key={a.value} type="button" className="rte-btn" title={a.title} aria-label={a.title} onMouseDown={(e) => e.preventDefault()} onClick={() => align(a.value)}>
             <AlignIcon value={a.value} />
@@ -120,6 +213,15 @@ export default function RichTextField({ id, name, defaultValue }: Props) {
           ))}
         </select>
       </div>
+      {uploadPhoto && (
+        <input ref={photoInput} type="file" accept={PHOTO_TYPES} multiple hidden onChange={addPhotos} />
+      )}
+      {photoStatus && <p className="field-hint">{photoStatus}</p>}
+      {photoError && (
+        <p className="form-error" role="alert">
+          {photoError}
+        </p>
+      )}
       <textarea ref={ref} id={id} name={name} className="textarea" defaultValue={defaultValue} required />
     </div>
   )

@@ -10,6 +10,8 @@ const mocks = vi.hoisted(() => ({
   getArticleById: vi.fn(),
   resolveCoverField: vi.fn(),
   removeCover: vi.fn(),
+  removeDroppedImages: vi.fn(),
+  uploadCover: vi.fn(),
   authorExists: vi.fn(),
 }))
 
@@ -26,12 +28,15 @@ vi.mock('@/lib/users', () => ({ authorExists: mocks.authorExists }))
 vi.mock('@/lib/storage', () => ({
   resolveCoverField: mocks.resolveCoverField,
   removeCover: mocks.removeCover,
+  removeDroppedImages: mocks.removeDroppedImages,
+  uploadCover: mocks.uploadCover,
 }))
 
 import {
   createArticleAction,
   updateArticleAction,
   deleteArticleAction,
+  uploadArticlePhotoAction,
 } from './actions'
 
 const STORED = 'https://test.supabase.co/storage/v1/object/public/covers/articles/old.png'
@@ -148,6 +153,12 @@ describe('updateArticleAction', () => {
     expect(mocks.redirect).not.toHaveBeenCalled()
   })
 
+  it('drops the body photos the new text no longer uses', async () => {
+    await run(updateArticleAction({}, form(validFields)))
+
+    expect(mocks.removeDroppedImages).toHaveBeenCalledWith('Corps', validFields.body)
+  })
+
   it('refuses to save without a title', async () => {
     const state = await run(updateArticleAction({}, form({ ...validFields, title: '  ' })))
 
@@ -250,6 +261,7 @@ describe('deleteArticleAction', () => {
 
     expect(mocks.deleteArticle).toHaveBeenCalledWith('article-1')
     expect(mocks.removeCover).toHaveBeenCalledWith(STORED)
+    expect(mocks.removeDroppedImages).toHaveBeenCalledWith('Corps')
   })
 
   it('still deletes when the row is already gone', async () => {
@@ -288,5 +300,40 @@ describe('authentication', () => {
       createArticleAction({}, form({ title: 'T', category: 'C', body: 'B' }))
     ).rejects.toThrow('NEXT_REDIRECT:/admin/login')
     expect(mocks.createArticle).not.toHaveBeenCalled()
+  })
+})
+
+describe('uploadArticlePhotoAction', () => {
+  function photoForm(file?: File) {
+    const formData = new FormData()
+    if (file) formData.append('photo', file)
+    return formData
+  }
+
+  it('returns the public URL of the uploaded photo', async () => {
+    mocks.getCurrentUser.mockResolvedValue({ id: 'user-1' })
+    mocks.uploadCover.mockResolvedValue(FRESH)
+    const file = new File(['x'], 'photo.webp', { type: 'image/webp' })
+
+    await expect(uploadArticlePhotoAction(photoForm(file))).resolves.toEqual({ url: FRESH })
+    expect(mocks.uploadCover).toHaveBeenCalledWith(file, 'articles')
+  })
+
+  it('reports an upload failure instead of throwing', async () => {
+    mocks.getCurrentUser.mockResolvedValue({ id: 'user-1' })
+    mocks.uploadCover.mockRejectedValue(new Error('Image trop lourde (max 5 Mo).'))
+    const file = new File(['x'], 'photo.webp', { type: 'image/webp' })
+
+    await expect(uploadArticlePhotoAction(photoForm(file))).resolves.toEqual({
+      error: 'Image trop lourde (max 5 Mo).',
+    })
+  })
+
+  it('refuses an empty request', async () => {
+    mocks.getCurrentUser.mockResolvedValue({ id: 'user-1' })
+    await expect(uploadArticlePhotoAction(photoForm())).resolves.toEqual({
+      error: 'Aucune photo reçue.',
+    })
+    expect(mocks.uploadCover).not.toHaveBeenCalled()
   })
 })

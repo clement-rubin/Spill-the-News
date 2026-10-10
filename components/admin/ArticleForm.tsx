@@ -5,7 +5,7 @@ import Link from 'next/link'
 import AuthorField from './AuthorField'
 import CoverField from './CoverField'
 import RichTextField from './RichTextField'
-import type { FormState } from '@/app/admin/articles/actions'
+import { uploadArticlePhotoAction, type FormState } from '@/app/admin/articles/actions'
 import type { AuthorOption } from '@/lib/users'
 
 type Action = (prev: FormState, formData: FormData) => Promise<FormState>
@@ -72,11 +72,12 @@ export default function ArticleForm({ action, authors, defaultAuthorId, article 
 
       <div className="field">
         <label htmlFor="body">Contenu</label>
-        <RichTextField id="body" name="body" defaultValue={article?.body} />
+        <RichTextField id="body" name="body" defaultValue={article?.body} uploadPhoto={uploadArticlePhotoAction} />
         <p className="field-hint">
-          Utilisez la barre d&apos;outils pour mettre en gras, souligner, changer la police,
-          insérer un lien, une citation ou aligner/justifier un passage. Markdown accepté aussi : <code>## Titre</code>, <code>**gras**</code>,{' '}
-          <code>[lien](https://…)</code>.
+          Utilisez la barre d&apos;outils pour ajouter un titre de partie, mettre en gras,
+          souligner, changer la police, insérer un lien, une citation, des photos avec légende ou
+          aligner/justifier un passage. Plusieurs photos ajoutées d&apos;un coup s&apos;affichent
+          côte à côte ; la légende se modifie entre les crochets de <code>![légende](…)</code>.
         </p>
       </div>
 
