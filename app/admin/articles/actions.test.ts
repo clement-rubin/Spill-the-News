@@ -8,8 +8,7 @@ const mocks = vi.hoisted(() => ({
   updateArticle: vi.fn(),
   deleteArticle: vi.fn(),
   getArticleById: vi.fn(),
-  resolveCoverField: vi.fn(),
-  removeCover: vi.fn(),
+  removeCovers: vi.fn(),
   removeDroppedImages: vi.fn(),
   uploadCover: vi.fn(),
   authorExists: vi.fn(),
@@ -26,8 +25,7 @@ vi.mock('@/lib/articles', () => ({
 }))
 vi.mock('@/lib/users', () => ({ authorExists: mocks.authorExists }))
 vi.mock('@/lib/storage', () => ({
-  resolveCoverField: mocks.resolveCoverField,
-  removeCover: mocks.removeCover,
+  removeCovers: mocks.removeCovers,
   removeDroppedImages: mocks.removeDroppedImages,
   uploadCover: mocks.uploadCover,
 }))
@@ -48,6 +46,7 @@ const existing = {
   category: 'Culture',
   body: 'Corps',
   coverImage: STORED,
+  covers: [{ url: STORED, caption: '' }],
   authorId: 'author-1',
 }
 
@@ -62,7 +61,6 @@ const validFields = {
   title: 'Titre',
   category: 'Culture',
   body: 'Corps',
-  coverImage: STORED,
 }
 
 beforeEach(() => {
@@ -74,13 +72,12 @@ beforeEach(() => {
   })
   mocks.getCurrentUser.mockResolvedValue({ id: 'author-1', email: 'author@example.com', name: 'Author' })
   mocks.getArticleById.mockResolvedValue(existing)
-  mocks.resolveCoverField.mockResolvedValue({})
   // clearAllMocks leaves resolved/rejected behaviours in place, so the write
   // stubs have to be reset by hand or one test's failure bleeds into the next.
   mocks.createArticle.mockResolvedValue(undefined)
   mocks.updateArticle.mockResolvedValue(undefined)
   mocks.deleteArticle.mockResolvedValue(undefined)
-  mocks.removeCover.mockResolvedValue(undefined)
+  mocks.removeCovers.mockResolvedValue(undefined)
   mocks.authorExists.mockResolvedValue(true)
 })
 
@@ -93,63 +90,69 @@ async function run(action) {
 }
 
 describe('updateArticleAction', () => {
-  it('saves the text fields and leaves an untouched cover alone', async () => {
+  it('saves the text fields and leaves the covers alone when the form has none', async () => {
     await run(updateArticleAction({}, form(validFields)))
 
     expect(mocks.updateArticle).toHaveBeenCalledWith('article-1', {
       title: 'Titre',
       category: 'Culture',
       body: 'Corps',
-      coverImage: undefined,
+      covers: undefined,
       authorId: 'author-1',
     })
     // Nothing was replaced, so the stored file must survive.
-    expect(mocks.removeCover).not.toHaveBeenCalled()
+    expect(mocks.removeCovers).not.toHaveBeenCalled()
   })
 
-  it('deletes the previous file only after a successful swap', async () => {
-    mocks.resolveCoverField.mockResolvedValue({ coverImage: FRESH })
+  it('saves several covers with their captions', async () => {
+    const covers = [
+      { url: STORED, caption: 'Un' },
+      { url: FRESH, caption: 'Deux' },
+    ]
 
-    await run(updateArticleAction({}, form(validFields)))
+    await run(updateArticleAction({}, form({ ...validFields, covers: JSON.stringify(covers) })))
 
     expect(mocks.updateArticle).toHaveBeenCalledWith(
       'article-1',
-      expect.objectContaining({ coverImage: FRESH })
+      expect.objectContaining({ covers })
     )
-    expect(mocks.removeCover).toHaveBeenCalledWith(STORED)
+    expect(mocks.removeCovers).toHaveBeenCalledWith([])
   })
 
-  it('clears the cover when the field comes back empty', async () => {
-    mocks.resolveCoverField.mockResolvedValue({ coverImage: null })
+  it('deletes the files that dropped out of the list, after the save', async () => {
+    const covers = JSON.stringify([{ url: FRESH, caption: '' }])
 
-    await run(updateArticleAction({}, form({ ...validFields, coverImage: '' })))
+    await run(updateArticleAction({}, form({ ...validFields, covers })))
+
+    expect(mocks.removeCovers).toHaveBeenCalledWith([STORED])
+  })
+
+  it('clears every cover when the list comes back empty', async () => {
+    await run(updateArticleAction({}, form({ ...validFields, covers: '[]' })))
 
     expect(mocks.updateArticle).toHaveBeenCalledWith(
       'article-1',
-      expect.objectContaining({ coverImage: null })
+      expect.objectContaining({ covers: [] })
     )
-    expect(mocks.removeCover).toHaveBeenCalledWith(STORED)
+    expect(mocks.removeCovers).toHaveBeenCalledWith([STORED])
   })
 
-  it('writes nothing when the cover itself failed to upload', async () => {
-    mocks.resolveCoverField.mockResolvedValue({ error: 'Image trop lourde (max 5 Mo).' })
+  it('writes nothing when the covers field is unreadable', async () => {
+    const state = await run(updateArticleAction({}, form({ ...validFields, covers: 'oups' })))
 
-    const state = await run(updateArticleAction({}, form(validFields)))
-
-    expect(state).toEqual({ error: 'Image trop lourde (max 5 Mo).' })
+    expect(state).toHaveProperty('error')
     expect(mocks.updateArticle).not.toHaveBeenCalled()
-    expect(mocks.removeCover).not.toHaveBeenCalled()
+    expect(mocks.removeCovers).not.toHaveBeenCalled()
   })
 
-  it('cleans up the orphaned upload when the database write fails', async () => {
-    mocks.resolveCoverField.mockResolvedValue({ coverImage: FRESH })
+  it('keeps the old files when the database write fails', async () => {
+    const covers = JSON.stringify([{ url: FRESH, caption: '' }])
     mocks.updateArticle.mockRejectedValue(new Error('deadlock detected'))
 
-    const state = await run(updateArticleAction({}, form(validFields)))
+    const state = await run(updateArticleAction({}, form({ ...validFields, covers })))
 
     expect(state).toEqual({ error: 'deadlock detected' })
-    // The new file went up but the row never changed, so it has to go back down.
-    expect(mocks.removeCover).toHaveBeenCalledWith(FRESH)
+    expect(mocks.removeCovers).not.toHaveBeenCalled()
     expect(mocks.redirect).not.toHaveBeenCalled()
   })
 
@@ -213,7 +216,7 @@ describe('createArticleAction', () => {
       title: 'Titre',
       category: 'Culture',
       body: 'Corps',
-      coverImage: undefined,
+      covers: undefined,
       authorId: 'author-1',
     })
   })
@@ -235,22 +238,18 @@ describe('createArticleAction', () => {
     expect(mocks.createArticle).not.toHaveBeenCalled()
   })
 
-  it('publishes without a cover when none is given', async () => {
-    mocks.resolveCoverField.mockResolvedValue({ coverImage: null })
+  it('publishes with the covers and captions given', async () => {
+    const covers = [{ url: FRESH, caption: 'Légende' }]
 
-    await run(createArticleAction({}, form(newFields)))
+    await run(createArticleAction({}, form({ ...newFields, covers: JSON.stringify(covers) })))
 
-    expect(mocks.createArticle).toHaveBeenCalledWith(
-      expect.objectContaining({ coverImage: null })
-    )
+    expect(mocks.createArticle).toHaveBeenCalledWith(expect.objectContaining({ covers }))
   })
 
-  it('does not publish when the upload failed', async () => {
-    mocks.resolveCoverField.mockResolvedValue({ error: 'Format d’image non supporté.' })
+  it('does not publish when the covers field is unreadable', async () => {
+    const state = await run(createArticleAction({}, form({ ...newFields, covers: '{' })))
 
-    const state = await run(createArticleAction({}, form(newFields)))
-
-    expect(state).toEqual({ error: 'Format d’image non supporté.' })
+    expect(state).toHaveProperty('error')
     expect(mocks.createArticle).not.toHaveBeenCalled()
   })
 })
@@ -260,7 +259,7 @@ describe('deleteArticleAction', () => {
     await run(deleteArticleAction(form({ id: 'article-1' })))
 
     expect(mocks.deleteArticle).toHaveBeenCalledWith('article-1')
-    expect(mocks.removeCover).toHaveBeenCalledWith(STORED)
+    expect(mocks.removeCovers).toHaveBeenCalledWith([STORED])
     expect(mocks.removeDroppedImages).toHaveBeenCalledWith('Corps')
   })
 
@@ -270,7 +269,7 @@ describe('deleteArticleAction', () => {
     await run(deleteArticleAction(form({ id: 'article-1' })))
 
     expect(mocks.deleteArticle).toHaveBeenCalledWith('article-1')
-    expect(mocks.removeCover).toHaveBeenCalledWith(undefined)
+    expect(mocks.removeCovers).not.toHaveBeenCalled()
   })
 })
 

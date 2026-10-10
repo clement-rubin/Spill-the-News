@@ -1,11 +1,12 @@
 import { supabase } from './supabase'
 import { slugify } from './slugify'
+import { parseCovers, serializeCovers, type Cover } from './covers'
 
 export interface CreateArticleInput {
   title: string
   body: string
   category: string
-  coverImage?: string | null
+  covers?: Cover[]
   authorId: string
 }
 
@@ -13,7 +14,7 @@ export interface UpdateArticleInput {
   title?: string
   body?: string
   category?: string
-  coverImage?: string | null
+  covers?: Cover[]
   authorId?: string
 }
 
@@ -39,7 +40,9 @@ export interface Article {
   id: string
   title: string
   slug: string
+  /** The first cover photo, the one cards and previews show. */
   coverImage: string | null
+  covers: Cover[]
   body: string
   category: string
   publishedAt: Date
@@ -48,11 +51,13 @@ export interface Article {
 }
 
 function mapArticle(row: ArticleRow): Article {
+  const covers = parseCovers(row.cover_image)
   return {
     id: row.id,
     title: row.title,
     slug: row.slug,
-    coverImage: row.cover_image,
+    coverImage: covers[0]?.url ?? null,
+    covers,
     body: row.body,
     category: row.category,
     publishedAt: new Date(row.published_at),
@@ -85,7 +90,7 @@ export async function createArticle(input: CreateArticleInput): Promise<Article>
       title: input.title,
       body: input.body,
       category: input.category,
-      cover_image: input.coverImage ?? null,
+      cover_image: serializeCovers(input.covers ?? []),
       author_id: input.authorId,
       slug,
     })
@@ -133,7 +138,7 @@ export async function updateArticle(id: string, input: UpdateArticleInput): Prom
   if (input.title !== undefined) patch.title = input.title
   if (input.body !== undefined) patch.body = input.body
   if (input.category !== undefined) patch.category = input.category
-  if (input.coverImage !== undefined) patch.cover_image = input.coverImage
+  if (input.covers !== undefined) patch.cover_image = serializeCovers(input.covers)
   if (input.authorId !== undefined) patch.author_id = input.authorId
 
   const { data, error } = await supabase

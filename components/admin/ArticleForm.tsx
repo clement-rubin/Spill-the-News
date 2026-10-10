@@ -3,10 +3,11 @@
 import { useFormState, useFormStatus } from 'react-dom'
 import Link from 'next/link'
 import AuthorField from './AuthorField'
-import CoverField from './CoverField'
+import CoversField from './CoversField'
 import RichTextField from './RichTextField'
 import { uploadArticlePhotoAction, type FormState } from '@/app/admin/articles/actions'
 import type { AuthorOption } from '@/lib/users'
+import type { Cover } from '@/lib/covers'
 
 type Action = (prev: FormState, formData: FormData) => Promise<FormState>
 
@@ -19,7 +20,7 @@ interface Props {
     title: string
     category: string
     body: string
-    coverImage: string | null
+    covers: Cover[]
   }
 }
 
@@ -68,7 +69,7 @@ export default function ArticleForm({ action, authors, defaultAuthorId, article 
         hint="Nom affiché sous le titre de l’article."
       />
 
-      <CoverField defaultValue={article?.coverImage ?? null} />
+      <CoversField defaultValue={article?.covers ?? []} upload={uploadArticlePhotoAction} />
 
       <div className="field">
         <label htmlFor="body">Contenu</label>

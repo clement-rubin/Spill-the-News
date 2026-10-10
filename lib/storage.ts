@@ -117,6 +117,12 @@ export async function removeDroppedImages(before: string, after = ''): Promise<v
   if (paths.length) await supabase.storage.from(COVER_BUCKET).remove(paths)
 }
 
+/** Removes uploaded files by public URL; outside URLs are left alone. */
+export async function removeCovers(urls: string[]): Promise<void> {
+  const paths = urls.map(managedCoverPath).filter((path): path is string => path !== null)
+  if (paths.length) await supabase.storage.from(COVER_BUCKET).remove(paths)
+}
+
 export interface CoverField {
   /** undefined = leave the column alone, null = clear it, string = set it. */
   coverImage?: string | null

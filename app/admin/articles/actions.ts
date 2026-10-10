@@ -9,7 +9,8 @@ import {
   deleteArticle,
   getArticleById,
 } from '@/lib/articles'
-import { resolveCoverField, removeCover, removeDroppedImages, uploadCover } from '@/lib/storage'
+import { removeCovers, removeDroppedImages, uploadCover } from '@/lib/storage'
+import { droppedCoverUrls, readCoversField } from '@/lib/covers'
 import { authorExists } from '@/lib/users'
 
 export interface FormState {
@@ -56,14 +57,14 @@ export async function createArticleAction(
   const authorId = await readAuthor(formData, currentUserId)
   if (!authorId) return { error: 'Auteur introuvable.' }
 
-  const cover = await resolveCoverField(formData, 'articles')
-  if (cover.error) return { error: cover.error }
+  const cover = readCoversField(formData.get('covers'))
+  if ('error' in cover) return { error: cover.error }
 
+  // The photos were uploaded when picked, so a failed save keeps them: the
+  // editor is still open on the same list and can simply try again.
   try {
-    await createArticle({ ...parsed, coverImage: cover.coverImage, authorId })
+    await createArticle({ ...parsed, covers: cover.covers, authorId })
   } catch (error) {
-    // A cover that just went up is now orphaned, so drop it before bailing.
-    await removeCover(cover.coverImage)
     return { error: message(error, 'Publication impossible.') }
   }
 
@@ -90,18 +91,16 @@ export async function updateArticleAction(
   const authorId = await readAuthor(formData, current.authorId)
   if (!authorId) return { error: 'Auteur introuvable.' }
 
-  const cover = await resolveCoverField(formData, 'articles', current.coverImage)
-  if (cover.error) return { error: cover.error }
+  const cover = readCoversField(formData.get('covers'))
+  if ('error' in cover) return { error: cover.error }
 
   try {
-    await updateArticle(id, { ...parsed, coverImage: cover.coverImage, authorId })
+    await updateArticle(id, { ...parsed, covers: cover.covers, authorId })
   } catch (error) {
-    await removeCover(cover.coverImage)
     return { error: message(error, 'Enregistrement impossible.') }
   }
 
-  // undefined means the cover was left alone, so the stored file stays put.
-  if (cover.coverImage !== undefined) await removeCover(current.coverImage)
+  if (cover.covers) await removeCovers(droppedCoverUrls(current.covers, cover.covers))
   await removeDroppedImages(current.body, parsed.body)
 
   revalidatePath('/admin')
@@ -118,7 +117,7 @@ export async function deleteArticleAction(formData: FormData) {
 
   const current = await getArticleById(id)
   await deleteArticle(id)
-  await removeCover(current?.coverImage)
+  if (current) await removeCovers(current.covers.map((cover) => cover.url))
   if (current) await removeDroppedImages(current.body)
 
   revalidatePath('/admin')
@@ -133,7 +132,7 @@ export interface PhotoUpload {
   error?: string
 }
 
-/** Called by the editor's photo button; the photo is placed in the body as Markdown. */
+/** Called by the editor for body photos and cover photos: uploads one file, returns its URL. */
 export async function uploadArticlePhotoAction(formData: FormData): Promise<PhotoUpload> {
   await requireAuthorId()
   const file = formData.get('photo')

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import CoverGallery from '@/components/CoverGallery'
 import { renderMarkdown } from '@/lib/markdown'
 import { getArticleBySlug } from '@/lib/articles'
 
@@ -36,11 +37,7 @@ export default async function ArticleDetailPage({ params }: { params: { slug: st
         </div>
       </header>
 
-      {article.coverImage && (
-        <div className="detail-cover">
-          <img src={article.coverImage} alt="" />
-        </div>
-      )}
+      <CoverGallery covers={article.covers} />
 
       {/* renderMarkdown does not sanitize — safe only because article.body is admin-authored, not public input */}
       <div className="prose" dangerouslySetInnerHTML={{ __html: renderMarkdown(article.body) }} />
