@@ -54,14 +54,11 @@ few emails/hour)
 
 Dashboard → **Authentication** → **Settings** → **SMTP Settings**:
 
-- Host: `smtp.resend.com`
+- Host: `smtp.gmail.com`
 - Port: `465`
-- Username: `resend`
-- Password: your Resend API key
-- Sender email: an address on a domain you've verified in Resend
-
-Prerequisite: a verified sending domain in Resend (same one used for the
-newsletter feature).
+- Username: the Gmail address (same `GMAIL_USER` as the newsletter)
+- Password: the Gmail app password (same `GMAIL_APP_PASSWORD`)
+- Sender email: the same Gmail address
 
 ## 4. Email templates (optional)
 

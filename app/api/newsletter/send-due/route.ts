@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { dispatchIssue, nextOccurrence, type Recurrence } from '@/lib/newsletterIssues'
 
-// Trigger this route periodically (e.g. every hour) from an external
-// scheduler — cron-job.org, a GitHub Actions scheduled workflow, or a
-// Netlify scheduled function — with header `x-cron-secret: <CRON_SECRET>`.
+// Triggered every hour by a Supabase pg_cron job (see
+// docs/newsletter-setup.md) with header `x-cron-secret: <CRON_SECRET>`.
 // It sends scheduled issues once they're due, and resends recurring
 // issues (weekly/monthly) once their next occurrence is due.
 

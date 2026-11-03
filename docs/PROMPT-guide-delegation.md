@@ -21,7 +21,7 @@ Tu es un formateur pédagogue et un ingénieur logiciel senior. Tu rédiges un *
 - **Dépôt GitHub** : https://github.com/clement-rubin/Spill-the-News (branche principale : `main`).
 - **Stack** : Next.js 14 (App Router) + React 18 + TypeScript, CSS global dans `app/globals.css`, animations GSAP, tests avec Vitest.
 - **Backend / données / comptes** : Supabase (base de données + authentification native Supabase Auth). L'ancien système NextAuth a été supprimé.
-- **Emails (newsletter, confirmations)** : Resend.
+- **Emails (newsletter, confirmations)** : Gmail SMTP (mot de passe d'application Gmail), voir `docs/newsletter-setup.md`.
 - **Hébergement / déploiement** : Netlify (build `npm run build`, dossier `.next`). Le détail du déclenchement automatique (push sur `main` = mise en ligne ?) est à confirmer : [À COMPLÉTER ou « vérifie dans netlify.toml / dis-moi comment le vérifier dans l'interface Netlify »].
 - **Structure utile** :
   - `app/` : pages (accueil, `articles/`, `podcast/`, `signup/`, `forgot-password/`, `reset-password/`), `app/admin/` (espace d'administration : articles, épisodes, newsletter, compte, login), `app/api/`.
@@ -29,24 +29,24 @@ Tu es un formateur pédagogue et un ingénieur logiciel senior. Tu rédiges un *
   - `docs/supabase-auth-setup.md` : guide d'installation de l'auth Supabase.
   - `scripts/migrate-users-to-supabase-auth.mjs` : script de migration (déjà exécuté, ne pas relancer).
 - **Commandes npm** : `npm install`, `npm run dev` (site local sur http://localhost:3000), `npm test` (Vitest), `npm run lint`, `npm run build`.
-- **Variables d'environnement** (fichier `.env`, jamais commité) : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `APP_SECRET`, `SITE_URL`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `CRON_SECRET`. Il existe un modèle `.env.example`.
+- **Variables d'environnement** (fichier `.env`, jamais commité) : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `APP_SECRET`, `SITE_URL`, `GMAIL_USER`, `GMAIL_APP_PASSWORD`, `EMAIL_FROM_NAME`, `CRON_SECRET`. Il existe un modèle `.env.example`.
 - **Attention** : `PRODUCT.md` et `README.md` sont obsolètes (ils décrivent un ancien site HTML statique / sont vides). Le projet réel est le Next.js décrit ci-dessus.
 
 ## Ce que le guide doit contenir (dans cet ordre)
 
 Pour **chaque étape** : (1) à quoi ça sert, en une phrase simple ; (2) les actions exactes (clic par clic ou commande à copier-coller) ; (3) comment **vérifier que ça a marché** (ce qu'on doit voir à l'écran) ; (4) les **erreurs fréquentes** et leur solution.
 
-0. **Vue d'ensemble en 1 page** : schéma simple (texte ou Mermaid) « mon ordinateur → GitHub → Netlify → site en ligne », et Supabase/Resend en support. Explique chaque mot de jargon utilisé dans le guide (dépôt, clone, commit, push, branche, pull request, déploiement, terminal, variable d'environnement) via un **glossaire** d'une ligne chacun.
-1. **Comptes à créer / accès à demander** : GitHub (et comment je l'invite comme collaborateur), accès Netlify, accès Supabase, accès Resend (liste de ce qu'il faut me demander, avec le rôle minimal nécessaire pour chaque service).
+0. **Vue d'ensemble en 1 page** : schéma simple (texte ou Mermaid) « mon ordinateur → GitHub → Netlify → site en ligne », et Supabase/Gmail en support. Explique chaque mot de jargon utilisé dans le guide (dépôt, clone, commit, push, branche, pull request, déploiement, terminal, variable d'environnement) via un **glossaire** d'une ligne chacun.
+1. **Comptes à créer / accès à demander** : GitHub (et comment je l'invite comme collaborateur), accès Netlify, accès Supabase, accès au compte Gmail d'envoi (liste de ce qu'il faut me demander, avec le rôle minimal nécessaire pour chaque service).
 2. **Installer les outils**, un par un, avec liens officiels et vérification (`node -v`, `git --version`) : Git, Node.js (version LTS), éditeur de code **Visual Studio Code**, puis l'IA de programmation (**Claude Code** : app de bureau ou extension VS Code, et comment se connecter). Section dédiée aux problèmes classiques (PATH, droits administrateur, PowerShell qui bloque les scripts sous Windows).
 3. **Cloner le dépôt** : choisir un dossier **hors OneDrive/Dropbox** (explique pourquoi : OneDrive corrompt `node_modules` et `.git`), `git clone`, ouvrir le dossier dans VS Code.
-4. **Configurer l'environnement local** : copier `.env.example` en `.env`, où trouver chaque valeur (Supabase > Settings > API, Resend > API Keys…), comment générer `APP_SECRET` et `CRON_SECRET`, `npm install`, `npm run dev`, ouvrir http://localhost:3000. Précise que je (l'ancien responsable) transmets les secrets par un **canal sécurisé** (gestionnaire de mots de passe, jamais email/WhatsApp en clair) et que **rien de tout cela ne doit jamais être commité ni collé dans une conversation publique**.
+4. **Configurer l'environnement local** : copier `.env.example` en `.env`, où trouver chaque valeur (Supabase > Settings > API, mot de passe d'application Gmail sur myaccount.google.com/apppasswords…), comment générer `APP_SECRET` et `CRON_SECRET`, `npm install`, `npm run dev`, ouvrir http://localhost:3000. Précise que je (l'ancien responsable) transmets les secrets par un **canal sécurisé** (gestionnaire de mots de passe, jamais email/WhatsApp en clair) et que **rien de tout cela ne doit jamais être commité ni collé dans une conversation publique**.
 5. **Visite guidée du projet** : à quoi sert chaque dossier, où modifier quoi (un texte de la page d'accueil, un style, une page de l'admin). Exemples concrets avec le chemin des fichiers.
 6. **Travailler avec l'IA (Claude Code)** : comment la lancer dans le dossier du projet, comment formuler une demande efficace (contexte, résultat voulu, contraintes), **5 à 8 exemples de prompts prêts à copier** adaptés à ce site (ex. « change le texte du bouton X », « ajoute une section Y sur la page podcast », « corrige l'affichage mobile de la page article »), comment relire ce que l'IA a modifié (`git diff` / panneau Source Control de VS Code), quand dire non, et comment **annuler** une modification.
 7. **Le cycle de modification sûr** (le cœur du guide) : toujours travailler sur une **nouvelle branche** (jamais directement sur `main`), vérifier en local, lancer `npm test` + `npm run lint` + `npm run build`, faire un commit avec un message clair, pousser, ouvrir une **Pull Request** sur GitHub, vérifier l'aperçu Netlify s'il existe, **fusionner seulement quand tout est vert**. Donne la séquence de commandes exacte et une checklist « avant de fusionner ». Précise ce que fusionner sur `main` déclenche (mise en ligne) [À COMPLÉTER si confirmé].
 8. **Vérifier le site en ligne après une mise en ligne** : où voir l'état du déploiement dans Netlify, quoi tester à la main (accueil, un article, le podcast, connexion admin, inscription, mot de passe oublié), comment **revenir à la version précédente** (rollback Netlify et/ou `git revert`) si quelque chose casse.
 9. **Tâches courantes d'un superviseur** : publier un article / un épisode via l'admin (sans toucher au code), gérer la newsletter, ajouter ou supprimer un compte admin dans Supabase (et la subtilité : supprimer un utilisateur Auth laisse une ligne orpheline dans la table `users`), renouveler une clé API.
-10. **Règles de sécurité et de prudence** : ne jamais commiter `.env`, ne jamais partager `SUPABASE_SERVICE_ROLE_KEY` / `RESEND_API_KEY`, ne pas toucher à la base Supabase ni aux variables Netlify sans accord, ne pas relancer le script de migration, ne jamais utiliser `git push --force`, ne jamais accepter une commande de l'IA qu'on ne comprend pas sans demander.
+10. **Règles de sécurité et de prudence** : ne jamais commiter `.env`, ne jamais partager `SUPABASE_SERVICE_ROLE_KEY` / `GMAIL_APP_PASSWORD`, ne pas toucher à la base Supabase ni aux variables Netlify sans accord, ne pas relancer le script de migration, ne jamais utiliser `git push --force`, ne jamais accepter une commande de l'IA qu'on ne comprend pas sans demander.
 11. **Aide-mémoire final (1 page imprimable)** : les 10 commandes/gestes à connaître et l'arbre de décision « J'ai un problème → que faire ».
 12. **Quand arrêter et appeler à l'aide** : liste de situations (le site en ligne est cassé, message mentionnant « secret » ou « clé », conflit Git incompréhensible, l'IA propose de supprimer beaucoup de fichiers) + [À COMPLÉTER : mes coordonnées / canal de contact].
 
@@ -70,7 +70,7 @@ Un seul document **Markdown** structuré avec sommaire cliquable, prêt à être
 
 Avant de déléguer, prépare ces points, sinon le guide restera théorique :
 
-1. **Accès** : invite la personne comme collaborateur GitHub (rôle Write), et donne-lui un accès Netlify / Supabase / Resend avec le rôle minimal. Évite de partager ton propre compte.
+1. **Accès** : invite la personne comme collaborateur GitHub (rôle Write), et donne-lui un accès Netlify / Supabase / Gmail d'envoi avec le rôle minimal. Évite de partager ton propre compte.
 2. **Secrets** : transmets les valeurs du `.env` via un gestionnaire de mots de passe (Bitwarden, 1Password), pas par message.
 3. **Protège `main`** : sur GitHub, Settings > Branches > règle de protection sur `main` (exiger une Pull Request). Ça empêche qu'un débutant pousse directement en production par erreur.
 4. **Corrige les docs obsolètes** : `README.md` est vide et `PRODUCT.md` décrit un ancien site statique. Mets-les à jour (ou demande à Claude de le faire), le superviseur et son IA les liront.
