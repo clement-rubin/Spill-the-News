@@ -3,7 +3,9 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/session'
-import { createIssue, deleteIssue, dispatchIssue, type Recurrence } from '@/lib/newsletterIssues'
+import { createIssue, deleteIssue, dispatchIssue, sendTestIssue, type Recurrence } from '@/lib/newsletterIssues'
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export interface FormState {
   error?: string
@@ -25,6 +27,17 @@ export async function sendNewsletterAction(_prev: FormState, formData: FormData)
 
   if (!subject) return { error: 'Le sujet est obligatoire.' }
   if (!body) return { error: 'Le contenu est obligatoire.' }
+
+  // The "Envoyer un test" button submits the same form with intent=test:
+  // only the test address gets the email, nothing is saved.
+  if (formData.get('intent') === 'test') {
+    const testEmail = String(formData.get('testEmail') ?? '').trim().toLowerCase()
+    if (!EMAIL_PATTERN.test(testEmail)) return { error: 'Adresse de test invalide.' }
+    const result = await sendTestIssue(testEmail, subject, body)
+    return result.ok
+      ? { success: `Test envoyé à ${testEmail}. Rien n'a été envoyé aux abonnés.` }
+      : { error: `Échec de l'envoi du test : ${result.error}` }
+  }
 
   const scheduledAt = scheduledAtRaw ? new Date(scheduledAtRaw) : null
   if (scheduledAtRaw && Number.isNaN(scheduledAt?.getTime())) {

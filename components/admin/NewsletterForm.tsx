@@ -1,25 +1,37 @@
 'use client'
 
+import { useRef } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 import RichTextField from './RichTextField'
 import type { FormState } from '@/app/admin/newsletter/actions'
 
 type Action = (prev: FormState, formData: FormData) => Promise<FormState>
 
-function SubmitButton() {
+function SubmitButtons({ onIntent }: { onIntent: (intent: 'send' | 'test') => void }) {
   const { pending } = useFormStatus()
   return (
-    <button type="submit" className="btn" disabled={pending}>
-      {pending ? 'Envoi…' : 'Envoyer'}
-    </button>
+    <>
+      <button type="submit" className="btn btn--ghost" disabled={pending} onClick={() => onIntent('test')}>
+        Envoyer un test
+      </button>
+      <button type="submit" className="btn" disabled={pending} onClick={() => onIntent('send')}>
+        {pending ? 'Envoi…' : 'Envoyer'}
+      </button>
+    </>
   )
 }
 
 export default function NewsletterForm({ action }: { action: Action }) {
   const [state, formAction] = useFormState(action, {})
+  const intentRef = useRef<HTMLInputElement>(null)
+
+  function setIntent(intent: 'send' | 'test') {
+    if (intentRef.current) intentRef.current.value = intent
+  }
 
   return (
     <form action={formAction} className="form">
+      <input ref={intentRef} type="hidden" name="intent" defaultValue="send" />
       <div className="field">
         <label htmlFor="subject">Sujet</label>
         <input id="subject" name="subject" className="input" required />
@@ -49,6 +61,15 @@ export default function NewsletterForm({ action }: { action: Action }) {
         </p>
       </div>
 
+      <div className="field">
+        <label htmlFor="testEmail">Adresse de test</label>
+        <input id="testEmail" name="testEmail" type="email" className="input" placeholder="toi@gmail.com" />
+        <p className="field-hint">
+          « Envoyer un test » envoie ce numéro uniquement à cette adresse, sans l&apos;enregistrer ni
+          l&apos;envoyer aux abonnés.
+        </p>
+      </div>
+
       {state.error && (
         <p className="form-error" role="alert">
           {state.error}
@@ -61,7 +82,7 @@ export default function NewsletterForm({ action }: { action: Action }) {
       )}
 
       <div className="form-actions">
-        <SubmitButton />
+        <SubmitButtons onIntent={setIntent} />
       </div>
     </form>
   )

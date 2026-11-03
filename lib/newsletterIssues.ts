@@ -106,6 +106,14 @@ export async function deleteIssue(id: string): Promise<void> {
   if (error) throw error
 }
 
+function sendIssueTo(email: string, subject: string, bodyHtml: string) {
+  return sendEmail({
+    to: email,
+    subject,
+    html: renderNewsletterEmail({ title: subject, bodyHtml, unsubscribeHref: unsubscribeUrl(email) }),
+  })
+}
+
 /** Sends one issue to every current subscriber. Best-effort per recipient. */
 export async function dispatchIssue(subject: string, body: string): Promise<{ sent: number; failed: number }> {
   const { data: subscribers, error } = await supabase.from('newsletter_subscriptions').select('email')
@@ -116,16 +124,17 @@ export async function dispatchIssue(subject: string, body: string): Promise<{ se
   let failed = 0
 
   for (const { email } of subscribers ?? []) {
-    const result = await sendEmail({
-      to: email,
-      subject,
-      html: renderNewsletterEmail({ title: subject, bodyHtml, unsubscribeHref: unsubscribeUrl(email) }),
-    })
+    const result = await sendIssueTo(email, subject, bodyHtml)
     if (result.ok) sent++
     else failed++
   }
 
   return { sent, failed }
+}
+
+/** Sends a preview of an issue to a single address, without saving it or touching subscribers. */
+export function sendTestIssue(to: string, subject: string, body: string) {
+  return sendIssueTo(to, `[TEST] ${subject}`, marked.parse(body) as string)
 }
 
 export function nextOccurrence(from: Date, recurrence: Recurrence): Date {
