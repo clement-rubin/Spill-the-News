@@ -35,6 +35,7 @@ export async function POST(request: Request) {
 
   // The subscription is already saved, so a failed confirmation email
   // never turns into a failed subscription for the visitor.
+  const unsubscribeHref = unsubscribeUrl(email)
   await sendEmail({
     to: email,
     subject: 'Bienvenue dans la newsletter Spill the News',
@@ -42,8 +43,9 @@ export async function POST(request: Request) {
       title: "C'est confirmé ☕",
       bodyHtml:
         '<p>Merci de rejoindre la tasse du mercredi. Tu recevras nos prochains articles et épisodes directement dans ta boîte mail.</p>',
-      unsubscribeHref: unsubscribeUrl(email),
+      unsubscribeHref,
     }),
+    unsubscribeUrl: unsubscribeHref,
   })
 
   return NextResponse.json({ ok: true })

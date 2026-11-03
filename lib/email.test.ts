@@ -16,6 +16,22 @@ async function loadEmail() {
   return import('./email')
 }
 
+describe('htmlToText', () => {
+  it('keeps paragraphs, list items and link targets', async () => {
+    const { htmlToText } = await loadEmail()
+    const html = `<html><head><style>p{}</style></head><body>
+      <h1>Numéro 1</h1>
+      <p>Salut &amp; bienvenue<br>à toi</p>
+      <ul><li>Un</li><li>Deux</li></ul>
+      <p><a href="https://site.test/unsub" style="x">Se désabonner</a></p>
+    </body></html>`
+
+    expect(htmlToText(html)).toBe(
+      'Numéro 1\n\nSalut & bienvenue\nà toi\n\n- Un\n\n- Deux\n\nSe désabonner (https://site.test/unsub)',
+    )
+  })
+})
+
 describe('sendEmail', () => {
   beforeEach(() => {
     sendMail.mockReset()
@@ -53,6 +69,18 @@ describe('sendEmail', () => {
       to: 'reader@example.com',
       subject: 'Hello',
       html: '<p>Hi</p>',
+      text: 'Hi',
+    })
+  })
+
+  it('adds one-click List-Unsubscribe headers when given an unsubscribe URL', async () => {
+    sendMail.mockResolvedValue({ messageId: '1' })
+    const { sendEmail } = await loadEmail()
+
+    await sendEmail({ ...input, unsubscribeUrl: 'https://site.test/api/newsletter/unsubscribe?email=a&token=b' })
+    expect(sendMail.mock.calls[0][0].headers).toEqual({
+      'List-Unsubscribe': '<https://site.test/api/newsletter/unsubscribe?email=a&token=b>',
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
     })
   })
 

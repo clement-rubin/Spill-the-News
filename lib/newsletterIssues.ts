@@ -107,10 +107,12 @@ export async function deleteIssue(id: string): Promise<void> {
 }
 
 function sendIssueTo(email: string, subject: string, bodyHtml: string) {
+  const unsubscribeHref = unsubscribeUrl(email)
   return sendEmail({
     to: email,
     subject,
-    html: renderNewsletterEmail({ title: subject, bodyHtml, unsubscribeHref: unsubscribeUrl(email) }),
+    html: renderNewsletterEmail({ title: subject, bodyHtml, unsubscribeHref }),
+    unsubscribeUrl: unsubscribeHref,
   })
 }
 

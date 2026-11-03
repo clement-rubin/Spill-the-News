@@ -4,9 +4,32 @@ interface SendEmailInput {
   to: string
   subject: string
   html: string
+  /** Adds List-Unsubscribe headers so Gmail shows its own unsubscribe button. */
+  unsubscribeUrl?: string
 }
 
 const DEFAULT_FROM_NAME = 'Spill the News'
+
+const ENTITIES: Record<string, string> = { '&nbsp;': ' ', '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" }
+
+/**
+ * Plain-text alternative of an HTML email. HTML-only messages score worse
+ * with spam filters, so every send carries both parts.
+ */
+export function htmlToText(html: string): string {
+  return html
+    .replace(/<(head|style|script)[\s\S]*?<\/\1>/gi, '')
+    .replace(/<a\s[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi, '$2 ($1)')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|h[1-6]|li|blockquote|tr)>/gi, '\n\n')
+    .replace(/<li[^>]*>/gi, '- ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&(nbsp|amp|lt|gt|quot|#39);/g, (entity) => ENTITIES[entity])
+    .replace(/[ \t]+/g, ' ')
+    .replace(/ *\n */g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
 
 let transporter: Transporter | null | undefined
 
@@ -49,6 +72,13 @@ export async function sendEmail(input: SendEmailInput): Promise<{ ok: boolean; e
       to: input.to,
       subject: input.subject,
       html: input.html,
+      text: htmlToText(input.html),
+      ...(input.unsubscribeUrl && {
+        headers: {
+          'List-Unsubscribe': `<${input.unsubscribeUrl}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
+      }),
     })
     return { ok: true }
   } catch (error) {
