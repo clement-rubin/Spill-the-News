@@ -34,6 +34,12 @@ describe('section titles', () => {
     expect(html).not.toContain('<h2')
   })
 
+  it('keeps a bolded sentence ending with a full stop as bold text', () => {
+    const html = renderMarkdown('Intro.\n\n**Ceci est très important.**\n\nSuite.')
+    expect(html).toContain('<p><strong>Ceci est très important.</strong></p>')
+    expect(html).not.toContain('<h2')
+  })
+
   it('leaves a line with two bold runs alone', () => {
     const html = renderMarkdown('**Avant** et **après**')
     expect(html).not.toContain('<h2')

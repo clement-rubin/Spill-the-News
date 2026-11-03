@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { decodeCover, encodePhoto } from '@/lib/image'
+import { alignBlock, toggleEmphasis, type Emphasis, type TextEdit } from '@/lib/textFormat'
 
 const FONTS = [
   { label: 'Police…', value: '' },
@@ -15,8 +16,13 @@ const ALIGNMENTS = [
   { value: 'left', title: 'Aligner à gauche' },
   { value: 'center', title: 'Centrer' },
   { value: 'right', title: 'Aligner à droite' },
-  { value: 'justify', title: 'Justifier' },
+  { value: 'justify', title: 'Justifier (texte aligné des deux côtés)', label: 'Justifier' },
 ]
+
+const PLACEHOLDERS: Record<Emphasis, string> = {
+  bold: 'texte en gras',
+  italic: 'texte en italique',
+}
 
 const PHOTO_TYPES = 'image/jpeg,image/png,image/webp,image/gif,image/avif'
 
@@ -131,15 +137,54 @@ export default function RichTextField({ id, name, defaultValue, uploadPhoto }: P
     wrapSelection('[', `](${url})`, 'texte du lien')
   }
 
-  // Blank lines around the content let marked keep parsing the Markdown inside the div.
-  function align(value: string) {
+  /**
+   * Writes the edit through the browser's own typing so Ctrl+Z still undoes
+   * it, replacing only the part that changed, then restores the selection.
+   */
+  function applyEdit(edit: TextEdit) {
     const el = ref.current
     if (!el) return
 
-    // Trim the blank lines a quote leaves behind so they don't pile up.
-    const selected = el.value.slice(el.selectionStart, el.selectionEnd).trim()
-    el.setRangeText(selected, el.selectionStart, el.selectionEnd, 'select')
-    wrapSelection(`\n\n<div style="text-align: ${value}">\n\n`, '\n\n</div>\n\n', 'texte aligné')
+    const old = el.value
+    let from = 0
+    while (from < old.length && from < edit.value.length && old[from] === edit.value[from]) from++
+    let tail = 0
+    while (
+      tail < old.length - from &&
+      tail < edit.value.length - from &&
+      old[old.length - 1 - tail] === edit.value[edit.value.length - 1 - tail]
+    ) tail++
+    const inserted = edit.value.slice(from, edit.value.length - tail)
+
+    el.focus()
+    el.setSelectionRange(from, old.length - tail)
+    const typed = inserted
+      ? document.execCommand('insertText', false, inserted)
+      : document.execCommand('delete')
+    if (!typed || el.value !== edit.value) el.value = edit.value
+    el.setSelectionRange(edit.selectionStart, edit.selectionEnd)
+  }
+
+  function emphasis(kind: Emphasis) {
+    const el = ref.current
+    if (!el) return
+    applyEdit(toggleEmphasis(el.value, el.selectionStart, el.selectionEnd, kind, PLACEHOLDERS[kind]))
+  }
+
+  function align(value: string) {
+    const el = ref.current
+    if (!el) return
+    applyEdit(alignBlock(el.value, el.selectionStart, el.selectionEnd, value, 'texte aligné'))
+  }
+
+  function shortcuts(event: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey) return
+    const key = event.key.toLowerCase()
+    if (key === 'b') emphasis('bold')
+    else if (key === 'i') emphasis('italic')
+    else if (key === 'u') wrapSelection('<u>', '</u>', 'texte souligné')
+    else return
+    event.preventDefault()
   }
 
   function quote() {
@@ -171,13 +216,13 @@ export default function RichTextField({ id, name, defaultValue, uploadPhoto }: P
         <button type="button" className="rte-btn rte-btn--wide" title="Titre de partie" onMouseDown={(e) => e.preventDefault()} onClick={heading}>
           Titre
         </button>
-        <button type="button" className="rte-btn" title="Gras" onMouseDown={(e) => e.preventDefault()} onClick={() => wrapSelection('**', '**', 'texte en gras')}>
+        <button type="button" className="rte-btn" title="Gras (Ctrl+B) — cliquer à nouveau pour l'enlever" aria-label="Gras" onMouseDown={(e) => e.preventDefault()} onClick={() => emphasis('bold')}>
           <strong>G</strong>
         </button>
-        <button type="button" className="rte-btn" title="Italique" onMouseDown={(e) => e.preventDefault()} onClick={() => wrapSelection('*', '*', 'texte en italique')}>
+        <button type="button" className="rte-btn" title="Italique (Ctrl+I) — cliquer à nouveau pour l'enlever" aria-label="Italique" onMouseDown={(e) => e.preventDefault()} onClick={() => emphasis('italic')}>
           <em>I</em>
         </button>
-        <button type="button" className="rte-btn" title="Souligné" onMouseDown={(e) => e.preventDefault()} onClick={() => wrapSelection('<u>', '</u>', 'texte souligné')}>
+        <button type="button" className="rte-btn" title="Souligné (Ctrl+U)" aria-label="Souligné" onMouseDown={(e) => e.preventDefault()} onClick={() => wrapSelection('<u>', '</u>', 'texte souligné')}>
           <span style={{ textDecoration: 'underline' }}>S</span>
         </button>
         <button type="button" className="rte-btn" title="Lien" onMouseDown={(e) => e.preventDefault()} onClick={insertLink}>
@@ -192,8 +237,9 @@ export default function RichTextField({ id, name, defaultValue, uploadPhoto }: P
           </button>
         )}
         {ALIGNMENTS.map((a) => (
-          <button key={a.value} type="button" className="rte-btn" title={a.title} aria-label={a.title} onMouseDown={(e) => e.preventDefault()} onClick={() => align(a.value)}>
+          <button key={a.value} type="button" className={a.label ? 'rte-btn rte-btn--wide' : 'rte-btn'} title={a.title} aria-label={a.title} onMouseDown={(e) => e.preventDefault()} onClick={() => align(a.value)}>
             <AlignIcon value={a.value} />
+            {a.label && <span>{a.label}</span>}
           </button>
         ))}
         <select
@@ -213,6 +259,10 @@ export default function RichTextField({ id, name, defaultValue, uploadPhoto }: P
           ))}
         </select>
       </div>
+      <p className="field-hint rte-hint">
+        Sélectionnez du texte, puis cliquez sur un bouton. Raccourcis : Ctrl+B gras, Ctrl+I italique,
+        Ctrl+U souligné. Un deuxième clic enlève le gras ou l&apos;italique.
+      </p>
       {uploadPhoto && (
         <input ref={photoInput} type="file" accept={PHOTO_TYPES} multiple hidden onChange={addPhotos} />
       )}
@@ -222,7 +272,7 @@ export default function RichTextField({ id, name, defaultValue, uploadPhoto }: P
           {photoError}
         </p>
       )}
-      <textarea ref={ref} id={id} name={name} className="textarea" defaultValue={defaultValue} required />
+      <textarea ref={ref} id={id} name={name} className="textarea" defaultValue={defaultValue} onKeyDown={shortcuts} required />
     </div>
   )
 }

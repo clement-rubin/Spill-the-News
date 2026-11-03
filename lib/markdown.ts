@@ -9,6 +9,12 @@ import { marked } from 'marked'
  */
 const BOLD_LINE = /^[ \t]*\*\*[ \t]*((?:[^*]|\*(?!\*))+?)[ \t]*\*\*[ \t]*$/
 
+/**
+ * A title does not end like a sentence: a bolded line ending with a full stop
+ * or a comma is text the writer wanted in bold, and stays bold.
+ */
+const SENTENCE_END = /[.…,;]$/
+
 /** `![légende](url)` or `![légende](url "titre")`, alone on its line. */
 const IMAGE_LINE = /^[ \t]*!\[(.*?)\]\((\S+?)(?:[ \t]+"[^"]*")?\)[ \t]*$/
 
@@ -80,7 +86,7 @@ export function prepareMarkdown(source: string): string {
     flush()
 
     const bold = line.match(BOLD_LINE)
-    if (bold && bold[1].length <= MAX_TITLE_LENGTH) {
+    if (bold && bold[1].length <= MAX_TITLE_LENGTH && !SENTENCE_END.test(bold[1])) {
       out.push('', `## ${bold[1]}`, '')
       continue
     }

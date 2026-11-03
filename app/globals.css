@@ -762,6 +762,13 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
 
 .prose img { margin: 2.25rem 0; border: 1px solid var(--line); }
 
+/* Blocks aligned from the editor keep the article's paragraph spacing, and
+   justified text hyphenates so narrow screens don't show wide gaps. */
+.prose div[style*='text-align'] > * { margin-bottom: 0; }
+.prose div[style*='text-align'] > * + * { margin-top: 1.35rem; }
+.prose div[style*='text-align'] > :first-child { margin-top: 0; }
+.prose div[style*='justify'] { hyphens: auto; -webkit-hyphens: auto; }
+
 /* Photos placed from the editor: one per row, or a grid when several follow
    each other. The caption sits right under its own photo. */
 .prose .photos { margin: 2.25rem 0; }
@@ -1061,7 +1068,16 @@ h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
 
 .rte-btn:hover { border-color: var(--pink); background: #fff6ea; }
 
-.rte-btn--wide { width: auto; padding: 0 0.7rem; font-size: 0.85rem; font-weight: 700; }
+.rte-btn--wide {
+  width: auto;
+  padding: 0 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.rte-hint { margin: 0 0 0.5rem; }
 .rte-btn:disabled { opacity: 0.5; cursor: progress; }
 
 .rte-font {
